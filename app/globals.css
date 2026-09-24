@@ -1363,6 +1363,41 @@ h3 {
   font-size: 0.59rem;
 }
 
+.google-signup-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.google-signup-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  color: #4285f4;
+  background: white;
+  border-radius: 50%;
+  place-items: center;
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.google-signup-card strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.google-signup-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.google-signup-card .button,
+.google-signup-card > small {
+  grid-column: 1 / -1;
+}
+
 .site-footer {
   padding: 70px 0 24px;
   background: #051219;
@@ -1750,6 +1785,372 @@ h3 {
   color: var(--muted);
   background: transparent;
   font-size: 0.68rem;
+}
+
+.registration-loading,
+.registration-error {
+  display: flex;
+  min-height: 260px;
+  padding: 35px;
+  flex-direction: column;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(14, 49, 59, 0.5);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.registration-loading svg {
+  margin-bottom: 8px;
+  color: var(--gold-300);
+}
+
+.registration-loading strong {
+  font-size: 0.85rem;
+}
+
+.registration-loading span,
+.registration-error p {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.registration-error > svg {
+  margin-bottom: 5px;
+  color: var(--danger);
+}
+
+.registration-error h2 {
+  margin: 0;
+  font-size: 1.45rem;
+}
+
+.registration-error small {
+  color: var(--muted);
+  font-size: 0.56rem;
+}
+
+.registration-error .button {
+  margin-top: 12px;
+}
+
+.google-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.google-button-primary {
+  position: relative;
+  min-height: 52px;
+  color: var(--ink-950);
+  background: var(--paper);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.google-button-primary:hover {
+  background: white;
+}
+
+.google-button-primary > svg {
+  position: absolute;
+  right: 20px;
+}
+
+.registration-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 16px;
+  justify-content: center;
+  color: var(--muted-light);
+  font-size: 0.61rem;
+}
+
+.registration-benefits span {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.registration-benefits svg {
+  color: var(--teal-400);
+}
+
+.registration-terms {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.58rem;
+}
+
+.registration-terms a {
+  color: var(--gold-300);
+}
+
+.registration-notice {
+  display: flex;
+  padding: 12px 14px;
+  gap: 9px;
+  align-items: flex-start;
+  color: var(--muted-light);
+  background: rgba(223, 189, 104, 0.06);
+  border: 1px solid var(--line-strong);
+  border-radius: 11px;
+  font-size: 0.65rem;
+}
+
+.registration-notice svg {
+  flex: 0 0 auto;
+  color: var(--gold-300);
+}
+
+.registration-account {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.registration-steps {
+  display: grid;
+  margin: 0 0 5px;
+  padding: 0;
+  grid-template-columns: repeat(3, 1fr);
+  list-style: none;
+}
+
+.registration-steps li {
+  position: relative;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: rgba(143, 165, 170, 0.58);
+  font-size: 0.57rem;
+  font-weight: 750;
+}
+
+.registration-steps li::after {
+  position: absolute;
+  z-index: 0;
+  top: 12px;
+  right: 9px;
+  left: 34px;
+  height: 1px;
+  background: var(--line);
+  content: "";
+}
+
+.registration-steps li:last-child::after {
+  display: none;
+}
+
+.registration-steps li > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  color: var(--muted);
+  background: var(--ink-900);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  place-items: center;
+}
+
+.registration-steps li.active,
+.registration-steps li.complete {
+  color: var(--paper-soft);
+}
+
+.registration-steps li.active > span {
+  color: var(--ink-950);
+  background: var(--gold-300);
+  border-color: var(--gold-300);
+}
+
+.registration-steps li.complete > span {
+  color: var(--ink-950);
+  background: var(--teal-400);
+  border-color: var(--teal-400);
+}
+
+.registered-account-card {
+  display: grid;
+  padding: 14px;
+  grid-template-columns: auto 1fr auto;
+  gap: 11px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+}
+
+.registered-avatar {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  color: var(--ink-950);
+  background: linear-gradient(135deg, var(--gold-300), var(--gold-500));
+  border-radius: 10px;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 850;
+}
+
+.registered-account-card > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.registered-account-card small,
+.registered-account-card span {
+  color: var(--muted);
+  font-size: 0.54rem;
+}
+
+.registered-account-card strong {
+  overflow: hidden;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.registered-account-card > svg {
+  color: var(--teal-400);
+}
+
+.telegram-connection,
+.telegram-connected {
+  display: flex;
+  padding: 25px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0, rgba(39, 153, 199, 0.12), transparent 42%),
+    rgba(14, 49, 59, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+}
+
+.telegram-connection-icon,
+.telegram-connected > span {
+  display: grid;
+  width: 55px;
+  height: 55px;
+  margin-bottom: 16px;
+  color: white;
+  background: linear-gradient(145deg, #54b9e8, #218fc3);
+  border-radius: 50%;
+  place-items: center;
+}
+
+.telegram-connected > span {
+  color: var(--ink-950);
+  background: var(--teal-400);
+}
+
+.telegram-connection h2,
+.telegram-connected h2 {
+  margin-bottom: 9px;
+  font-size: 1.55rem;
+}
+
+.telegram-connection > p,
+.telegram-connected > p {
+  margin-bottom: 20px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.65;
+}
+
+.telegram-open-button {
+  width: 100%;
+  color: white;
+  background: linear-gradient(145deg, #42aee0, #238fc1);
+}
+
+.telegram-open-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.pending-link {
+  display: flex;
+  width: 100%;
+  margin: -3px 0 16px;
+  padding: 11px 13px;
+  gap: 9px;
+  align-items: center;
+  color: var(--muted-light);
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  text-align: left;
+  font-size: 0.61rem;
+}
+
+.pending-link > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.pending-link small {
+  color: var(--muted);
+  font-size: 0.52rem;
+}
+
+.pending-link svg {
+  flex: 0 0 auto;
+  color: #45b2e3;
+}
+
+.inline-api-error {
+  display: flex;
+  padding: 11px 13px;
+  gap: 8px;
+  align-items: flex-start;
+  color: #f0b2ab;
+  background: rgba(225, 126, 117, 0.07);
+  border: 1px solid rgba(225, 126, 117, 0.2);
+  border-radius: 10px;
+  font-size: 0.62rem;
+}
+
+.inline-api-error svg {
+  flex: 0 0 auto;
+}
+
+.inline-api-error span {
+  display: flex;
+  flex-direction: column;
+}
+
+.inline-api-error small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.52rem;
+}
+
+.registration-logout {
+  display: inline-flex;
+  margin: 0 auto;
+  padding: 5px;
+  gap: 6px;
+  align-items: center;
+  color: var(--muted);
+  background: transparent;
+  font-size: 0.61rem;
+}
+
+.registration-logout:hover {
+  color: var(--paper);
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
 }
 
 .dashboard {
@@ -3047,6 +3448,12 @@ h3 {
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

@@ -525,32 +525,26 @@ export default function HomePage() {
               conectarlo con Telegram.
             </p>
           </div>
-          <form className="quick-signup" action="/registro" method="get">
-            <label>
-              Tu nombre
-              <input
-                type="text"
-                name="nombre"
-                placeholder="¿Cómo querés que te llamemos?"
-              />
-            </label>
-            <label>
-              Tu email
-              <input
-                type="email"
-                name="email"
-                placeholder="vos@ejemplo.com"
-                required
-              />
-            </label>
-            <button className="button button-gold button-large" type="submit">
-              Crear mi cuenta
+          <div className="quick-signup google-signup-card">
+            <span className="google-signup-icon">G</span>
+            <div>
+              <strong>Empezá con Google</strong>
+              <p>
+                Creá tu cuenta gratuita de forma segura y conectá Telegram en
+                el siguiente paso.
+              </p>
+            </div>
+            <Link
+              href="/registro"
+              className="button button-gold button-large"
+            >
+              Crear mi cuenta gratis
               <ArrowRight size={18} />
-            </button>
+            </Link>
             <small>
               Al continuar, aceptás los términos y la política de privacidad.
             </small>
-          </form>
+          </div>
         </div>
       </section>
 

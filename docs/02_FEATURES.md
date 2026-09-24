@@ -1,5 +1,12 @@
 # Funcionalidades
 
+## Estado actual
+
+- **Prototipo navegable**: la landing, el acceso, el registro y los paneles de cuenta, finanzas y eventos están implementados en Next.js.
+- **Datos de demostración**: los paneles permiten probar altas, ediciones, eliminaciones, filtros y preferencias sólo en memoria local.
+- **Registro gratuito integrado**: el frontend crea o recupera una cuenta gratuita mediante Google, restaura la sesión y guía la vinculación con Telegram usando el contrato `/api`.
+- **Integración parcial**: pagos, email y contraseña, y la persistencia de los paneles permanecen pendientes.
+
 ## Producto inicial
 
 ### Sitio público
@@ -23,12 +30,24 @@
 
 ### Registro, acceso y suscripción
 
-- **Registro con email**: permite crear una cuenta mediante email y contraseña, verificar el email y recuperar el acceso.
-- **Ingreso con Google**: permite crear una cuenta o ingresar mediante Google.
-- **Suscripción con Mercado Pago**: permite contratar y mantener una suscripción recurrente en pesos argentinos.
-- **Estado de pago confiable**: activa o modifica el acceso únicamente después de que el backend confirma el estado informado por Mercado Pago.
+- **Registro e ingreso con Google**: un único flujo crea la cuenta gratuita en el primer acceso y recupera la existente en los siguientes.
+- **Sesión segura**: la interfaz restaura la sesión del backend sin almacenar tokens persistentes.
+- **Plan gratuito renovable**: el primer acceso activa el plan Gratuito y muestra su período mensual vigente.
 - **Conexión con Telegram**: vincula de manera segura la cuenta web con una única identidad de Telegram.
-- **Continuidad del onboarding**: muestra el estado de cada paso y permite retomar un registro, pago o vínculo incompleto.
+- **Continuidad del onboarding**: muestra el estado de cuenta y Telegram, genera un enlace temporal y confirma automáticamente el vínculo.
+- **Suscripciones pagas posteriores**: email y contraseña, Mercado Pago y cambios de plan permanecen fuera de esta primera integración.
+
+### Dependencias del backend
+
+- **Identidad web actual**: Google OpenID Connect, sesión y cierre de sesión.
+- **Cuenta gratuita actual**: nombre, código de plan, período vigente y estado de Telegram.
+- **Vínculo actual con Telegram**: creación y consulta de un vínculo temporal y seguro.
+- **Planes públicos posteriores**: catálogo dinámico con nombres, precios, periodicidad y ambos cupos.
+- **Suscripciones posteriores**: checkout, estado, cambio y cancelación mediante Mercado Pago confirmado por el backend.
+- **Cuenta posterior**: perfil del usuario, perfil del asistente, proactividad y uso.
+- **Finanzas**: listado, resumen, alta, corrección y eliminación de movimientos propios.
+- **Eventos**: listado, alta, corrección, activación, desactivación y eliminación de eventos personales.
+- **Privacidad**: exportación y eliminación de cuenta bajo la política aprobada.
 
 ### Panel de cuenta
 
@@ -66,7 +85,7 @@
 - **Diseño adaptable**: todas las funciones principales deben ser utilizables en teléfono y escritorio.
 - **Accesibilidad**: navegación por teclado, foco visible, contraste suficiente, etiquetas comprensibles y movimiento reducido.
 - **Privacidad por defecto**: ningún usuario puede consultar ni modificar información de otra cuenta.
-- **Sin datos ficticios**: precios, cupos, estados de pago y consumo provienen del backend y no quedan fijados en la interfaz.
+- **Sin datos ficticios en producción**: precios, cupos, estados de pago y consumo provienen del backend. Los fixtures actuales existen sólo para el prototipo.
 
 ## Fuera del alcance inicial
 

@@ -1,6 +1,6 @@
 # Visión
 
-Este proyecto contiene la experiencia web de un producto que todavía no tiene nombre comercial. El asistente, su memoria, sus herramientas y su canal de Telegram viven en el backend de `custom-gemini-cli`; este frontend presenta el producto, incorpora usuarios y les permite administrar su cuenta y sus datos.
+Este proyecto contiene la experiencia web de un producto que todavía no tiene nombre comercial. El asistente, su memoria, sus herramientas y su canal de Telegram viven en `harle-backend`; este frontend presenta el producto, incorpora usuarios y les permite administrar su cuenta y sus datos mediante su API autenticada.
 
 ## Motivación
 
