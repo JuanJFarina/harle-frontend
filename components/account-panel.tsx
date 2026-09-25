@@ -11,9 +11,19 @@ import {
   Send,
   UserRound,
 } from "lucide-react";
+import Link from "next/link";
 import { FormEvent, useState } from "react";
+import {
+  firstName,
+  initials,
+  useDashboardSession,
+} from "@/components/dashboard-session";
+import { getPlan } from "@/lib/demo-data";
 
 export function AccountPanel() {
+  const session = useDashboardSession();
+  const plan = getPlan(session.plan_code);
+  const telegramConnected = session.telegram_link.state === "connected";
   const [frequency, setFrequency] = useState("Media");
   const [proactive, setProactive] = useState(true);
   const [saved, setSaved] = useState(false);
@@ -29,13 +39,15 @@ export function AccountPanel() {
       <div className="panel-heading">
         <div>
           <span className="panel-kicker">Mi cuenta</span>
-          <h1>Buenas tardes, Juan.</h1>
+          <h1>
+            {greeting()}, {firstName(session.display_name)}.
+          </h1>
           <p>Acá tenés un resumen de tu cuenta y tu compañero.</p>
         </div>
-        <button type="button" className="button button-outline">
+        <Link href="/#planes" className="button button-outline">
           Ver planes
           <ArrowUpRight size={17} />
-        </button>
+        </Link>
       </div>
 
       <div className="usage-grid">
@@ -44,28 +56,22 @@ export function AccountPanel() {
             <MessageCircle size={20} />
           </span>
           <div>
-            <small>Conversaciones</small>
-            <strong>154</strong>
-            <span>de 480 usadas</span>
+            <small>Conversaciones incluidas</small>
+            <strong>{plan.conversations.toLocaleString("es-AR")}</strong>
+            <span>por período mensual</span>
           </div>
-          <div className="usage-progress">
-            <span style={{ width: "32%" }} />
-          </div>
-          <b>326 disponibles</b>
+          <b>El consumo estará disponible próximamente</b>
         </article>
         <article className="usage-card">
           <span className="usage-icon">
             <BellRing size={20} />
           </span>
           <div>
-            <small>Notificaciones</small>
-            <strong>18</strong>
-            <span>de 60 usadas</span>
+            <small>Notificaciones incluidas</small>
+            <strong>{plan.notifications.toLocaleString("es-AR")}</strong>
+            <span>por período mensual</span>
           </div>
-          <div className="usage-progress">
-            <span style={{ width: "30%" }} />
-          </div>
-          <b>42 disponibles</b>
+          <b>El consumo estará disponible próximamente</b>
         </article>
         <article className="usage-card plan-summary-card">
           <span className="usage-icon">
@@ -73,12 +79,12 @@ export function AccountPanel() {
           </span>
           <div>
             <small>Plan actual</small>
-            <strong>Básico</strong>
-            <span>ARS 5.000 / mes</span>
+            <strong>{plan.name}</strong>
+            <span>{planPrice(plan.price)}</span>
           </div>
           <div className="renewal-row">
             <span>Próxima renovación</span>
-            <b>22 oct 2026</b>
+            <b>{formatDate(session.subscription_period_ends_at)}</b>
           </div>
         </article>
       </div>
@@ -98,7 +104,7 @@ export function AccountPanel() {
             <div className="form-grid">
               <label>
                 Nombre preferido
-                <input type="text" defaultValue="Juan" />
+                <input type="text" defaultValue={session.display_name} />
               </label>
               <label>
                 Idioma
@@ -197,26 +203,31 @@ export function AccountPanel() {
             <div className="telegram-card-mark">
               <Send size={27} fill="currentColor" />
             </div>
-            <span className="connection-status">
+            <span
+              className={`connection-status ${telegramConnected ? "" : "pending"}`}
+            >
               <i />
-              Conectado
+              {telegramConnected ? "Conectado" : "Sin conectar"}
             </span>
             <h2>Telegram</h2>
             <p>
-              Tu cuenta está conectada. Ya podés hablar con tu compañero desde
-              el bot.
+              {telegramConnected
+                ? "Tu cuenta está conectada. Ya podés hablar con tu compañero desde el bot."
+                : "Todavía falta conectar una cuenta de Telegram."}
             </p>
             <div className="connected-account">
-              <span>JF</span>
+              <span>{initials(session.display_name)}</span>
               <div>
-                <strong>Juan F.</strong>
-                <small>@juan_demo</small>
+                <strong>{session.display_name}</strong>
+                <small>
+                  {telegramConnected ? "Vínculo activo" : "Vínculo pendiente"}
+                </small>
               </div>
             </div>
-            <button type="button" className="button button-outline">
-              Abrir Telegram
+            <Link href="/registro" className="button button-outline">
+              {telegramConnected ? "Revisar conexión" : "Conectar Telegram"}
               <ArrowUpRight size={17} />
-            </button>
+            </Link>
           </section>
 
           <section className="panel-card subscription-card">
@@ -226,34 +237,70 @@ export function AccountPanel() {
               </span>
               <div>
                 <h2>Suscripción</h2>
-                <p>Activa desde el 22 sep 2026.</p>
+                <p>
+                  Activa desde{" "}
+                  {formatDate(session.subscription_period_starts_at)}.
+                </p>
               </div>
             </div>
             <dl>
               <div>
                 <dt>Plan</dt>
-                <dd>Básico</dd>
+                <dd>{plan.name}</dd>
               </div>
               <div>
                 <dt>Importe</dt>
-                <dd>ARS 5.000 / mes</dd>
+                <dd>{planPrice(plan.price)}</dd>
               </div>
               <div>
                 <dt>Período actual</dt>
-                <dd>22 sep — 22 oct</dd>
+                <dd>
+                  {formatShortDate(session.subscription_period_starts_at)} —{" "}
+                  {formatShortDate(session.subscription_period_ends_at)}
+                </dd>
               </div>
               <div>
                 <dt>Estado</dt>
                 <dd className="active-text">Activa</dd>
               </div>
             </dl>
-            <button type="button" className="text-action">
-              Administrar suscripción
-              <ArrowUpRight size={15} />
-            </button>
+            <span className="text-action">Planes pagos próximamente</span>
           </section>
         </div>
       </div>
     </>
   );
+}
+
+function greeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    return "Buen día";
+  }
+  if (hour < 20) {
+    return "Buenas tardes";
+  }
+  return "Buenas noches";
+}
+
+function planPrice(price: number): string {
+  if (price === 0) {
+    return "Sin costo";
+  }
+  return `ARS ${price.toLocaleString("es-AR")} / mes`;
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatShortDate(value: string): string {
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "short",
+  }).format(new Date(value));
 }

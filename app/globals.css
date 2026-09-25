@@ -2160,6 +2160,42 @@ h3 {
   background: #071820;
 }
 
+.dashboard-session-state {
+  display: flex;
+  min-height: 100vh;
+  padding: 30px;
+  color: var(--muted);
+  background: #071820;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.dashboard-session-state > svg {
+  color: var(--gold-300);
+}
+
+.dashboard-session-state strong {
+  color: var(--paper);
+}
+
+.dashboard-session-state span,
+.dashboard-session-state small {
+  font-size: 0.67rem;
+}
+
+.dashboard-session-state button {
+  margin-top: 8px;
+  padding: 9px 14px;
+  color: var(--ink-950);
+  background: var(--gold-300);
+  border-radius: 999px;
+  font-size: 0.67rem;
+  font-weight: 750;
+}
+
 .dashboard-sidebar {
   position: fixed;
   z-index: 12;
@@ -2694,6 +2730,15 @@ h3 {
   background: var(--teal-400);
   border-radius: 50%;
   box-shadow: 0 0 8px var(--teal-400);
+}
+
+.connection-status.pending {
+  color: var(--gold-300);
+}
+
+.connection-status.pending i {
+  background: var(--gold-300);
+  box-shadow: 0 0 8px var(--gold-300);
 }
 
 .telegram-card h2 {

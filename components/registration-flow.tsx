@@ -23,6 +23,7 @@ import {
   TelegramLink,
   WebSession,
 } from "@/lib/harle-api";
+import { getPlan } from "@/lib/demo-data";
 
 type RegistrationFlowProps = {
   mode: "register" | "login";
@@ -273,6 +274,7 @@ export function RegistrationFlow({
   }
 
   const connected = telegramLink.state === "connected";
+  const currentPlan = getPlan(session.plan_code);
   return (
     <div className="registration-account">
       <ol className="registration-steps" aria-label="Progreso del registro">
@@ -297,7 +299,7 @@ export function RegistrationFlow({
           {initials(session.display_name)}
         </span>
         <div>
-          <small>Cuenta gratuita activa</small>
+          <small>Cuenta {currentPlan.name} activa</small>
           <strong>{session.display_name}</strong>
           <span>
             El período se renueva el{" "}
@@ -315,7 +317,8 @@ export function RegistrationFlow({
           <h2>Tu Telegram ya está conectado</h2>
           <p>
             Ya podés conversar con tu compañero y usar las funciones de tu plan
-            Gratuito.
+            {" "}
+            {currentPlan.name}.
           </p>
           <Link href="/panel" className="button button-gold button-large">
             Continuar al panel

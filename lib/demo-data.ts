@@ -51,6 +51,10 @@ export const plans: Plan[] = [
   },
 ];
 
+export function getPlan(code: string): Plan {
+  return plans.find((plan) => plan.code === code) ?? plans[0];
+}
+
 export const initialExpenses: Expense[] = [
   {
     id: "exp-1",
