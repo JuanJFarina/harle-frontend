@@ -210,14 +210,17 @@ Una modificación autenticada seguirá este flujo:
 
 - El frontend usa Next.js 16, React 19 y TypeScript, con rutas públicas renderizables y paneles interactivos.
 - El backend es `harle-backend`, basado en FastAPI y PostgreSQL.
-- `NEXT_PUBLIC_HARLE_API_URL` deberá contener el origen HTTPS del backend, sin incluir `/api`.
-- La integración deberá consumir exclusivamente el contrato `/api`; el frontend no tendrá acceso directo a PostgreSQL.
-- `FRONTEND_REDIRECT_URL` en el backend deberá apuntar a la ruta `/registro` de este frontend para continuar el onboarding después de Google.
+- `HARLE_BACKEND_URL` deberá contener el origen privado de configuración del backend, sin incluir `/api`.
+- Next.js deberá publicar `/api/*` bajo el origen del frontend y reescribir internamente esas solicitudes hacia `/api/*` del backend.
+- El navegador deberá consumir exclusivamente rutas relativas `/api`; no deberá conocer el origen real del backend ni acceder directamente a PostgreSQL.
+- `GOOGLE_OAUTH_REDIRECT_URI` en el backend y Google Cloud deberá apuntar a `/api/auth/google/callback` bajo el origen del frontend.
+- `FRONTEND_REDIRECT_URL` en el backend deberá apuntar a `/registro` bajo el origen del frontend para continuar el onboarding después de Google.
 - El origen del frontend deberá estar incluido de forma explícita en `FRONTEND_ORIGINS` del backend.
 - La integración inicial de pagos usará la API de suscripciones y webhooks de Mercado Pago.
 - La autenticación con Google usará OAuth; la autenticación por email será propiedad del backend.
 - Telegram seguirá siendo el canal de conversación y notificación.
-- Frontend y backend deberán coordinar dominios, CORS, cookies, CSRF y redirecciones para mantener sesiones seguras.
+- El proxy same-origin deberá preservar redirecciones, cookies seguras, CSRF y encabezados de identificación de solicitudes.
+- Cuando frontend y backend compartan un dominio registrable, el proxy podrá conservarse o reemplazarse por acceso directo mediante una decisión documentada.
 - Los secretos de Google, Mercado Pago, Telegram, sesión y base de datos deberán residir únicamente en infraestructura protegida del backend.
 - Los entornos de desarrollo, prueba y producción deberán usar credenciales, URLs de retorno y webhooks separados.
 - La entrega deberá incluir compilación reproducible, controles de dependencias, pruebas críticas y despliegue sobre HTTPS.

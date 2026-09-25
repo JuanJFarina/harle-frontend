@@ -5,6 +5,7 @@
 - **Prototipo navegable**: la landing, el acceso, el registro y los paneles de cuenta, finanzas y eventos están implementados en Next.js.
 - **Datos de demostración**: los paneles permiten probar altas, ediciones, eliminaciones, filtros y preferencias sólo en memoria local.
 - **Registro gratuito integrado**: el frontend crea o recupera una cuenta gratuita mediante Google, restaura la sesión y guía la vinculación con Telegram usando el contrato `/api`.
+- **API bajo el origen del frontend**: Next.js reescribe `/api` hacia el backend para que las sesiones funcionen como cookies first-party aunque ambos proyectos estén desplegados en dominios diferentes.
 - **Integración parcial**: pagos, email y contraseña, y la persistencia de los paneles permanecen pendientes.
 
 ## Producto inicial

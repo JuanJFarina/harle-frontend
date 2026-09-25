@@ -41,7 +41,7 @@ export class HarleApiError extends Error {
 }
 
 export function startGoogleAuthentication(): void {
-  const url = apiUrl("/api/auth/google/start");
+  const url = new URL(apiPath("/api/auth/google/start"), window.location.origin);
   url.searchParams.set("locale", navigator.language || "es-AR");
   url.searchParams.set(
     "timezone",
@@ -86,7 +86,7 @@ async function request<Response>(
 ): Promise<Response> {
   let response: globalThis.Response;
   try {
-    response = await fetch(apiUrl(path), {
+    response = await fetch(apiPath(path), {
       ...init,
       credentials: "include",
       cache: "no-store",
@@ -118,14 +118,13 @@ async function request<Response>(
   return payload as Response;
 }
 
-function apiUrl(path: string): URL {
-  const baseUrl = process.env.NEXT_PUBLIC_HARLE_API_URL;
-  if (!baseUrl) {
+function apiPath(path: string): string {
+  if (!path.startsWith("/api/")) {
     throw new HarleApiError(
-      "Falta configurar NEXT_PUBLIC_HARLE_API_URL.",
+      "La ruta del backend no es válida.",
       0,
       "configuration_error",
     );
   }
-  return new URL(path, `${baseUrl.replace(/\/+$/, "")}/`);
+  return path;
 }
