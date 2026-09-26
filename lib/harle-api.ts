@@ -20,6 +20,35 @@ export type WebSession = {
   session_expires_at: string;
 };
 
+export type PublicPlan = {
+  code: string;
+  display_name: string;
+  monthly_price_ars: string;
+  currency: string;
+  billing_interval: string;
+  conversation_limit: number;
+  notification_limit: number;
+};
+
+export type Subscription = {
+  plan: PublicPlan;
+  pending_plan: PublicPlan | null;
+  status: string;
+  period_starts_at: string;
+  period_ends_at: string;
+  provider_status: string | null;
+  checkout_url: string | null;
+  cancel_at_period_end: boolean;
+  next_payment_at: string | null;
+};
+
+export type Checkout = {
+  subscription_id: string;
+  plan_code: string;
+  status: string;
+  checkout_url: string;
+};
+
 type ErrorEnvelope = {
   error?: {
     code?: string;
@@ -52,6 +81,41 @@ export function startGoogleAuthentication(): void {
 
 export async function getSession(signal?: AbortSignal): Promise<WebSession> {
   return request<WebSession>("/api/session", { signal });
+}
+
+export async function getPlans(signal?: AbortSignal): Promise<PublicPlan[]> {
+  return request<PublicPlan[]>("/api/plans", { signal });
+}
+
+export async function getSubscription(
+  signal?: AbortSignal,
+): Promise<Subscription> {
+  return request<Subscription>("/api/subscription", { signal });
+}
+
+export async function createSubscriptionCheckout(
+  planCode: string,
+  csrfToken: string,
+): Promise<Checkout> {
+  return request<Checkout>("/api/subscription/checkout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken,
+    },
+    body: JSON.stringify({ plan_code: planCode }),
+  });
+}
+
+export async function cancelSubscription(
+  csrfToken: string,
+): Promise<Subscription> {
+  return request<Subscription>("/api/subscription/cancel", {
+    method: "POST",
+    headers: {
+      "X-CSRF-Token": csrfToken,
+    },
+  });
 }
 
 export async function getTelegramLink(

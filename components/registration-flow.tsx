@@ -36,6 +36,12 @@ export function RegistrationFlow({
   mode,
   requestedPlan = "free",
 }: RegistrationFlowProps) {
+  const desiredPlan =
+    requestedPlan !== "free"
+      ? requestedPlan
+      : typeof window === "undefined"
+        ? "free"
+        : (window.sessionStorage.getItem("harle_desired_plan") ?? "free");
   const [screen, setScreen] = useState<ScreenState>("loading");
   const [session, setSession] = useState<WebSession | null>(null);
   const [telegramLink, setTelegramLink] = useState<TelegramLink | null>(null);
@@ -132,6 +138,9 @@ export function RegistrationFlow({
 
   function beginGoogleFlow() {
     setError(null);
+    if (desiredPlan !== "free") {
+      window.sessionStorage.setItem("harle_desired_plan", desiredPlan);
+    }
     try {
       startGoogleAuthentication();
     } catch (caught) {
@@ -219,7 +228,7 @@ export function RegistrationFlow({
   }
 
   if (screen === "anonymous") {
-    const paidPlanRequested = requestedPlan !== "free";
+    const paidPlanRequested = desiredPlan !== "free";
     return (
       <div className="google-entry">
         {paidPlanRequested && (
@@ -320,8 +329,18 @@ export function RegistrationFlow({
             {" "}
             {currentPlan.name}.
           </p>
-          <Link href="/panel" className="button button-gold button-large">
-            Continuar al panel
+          <Link
+            href={
+              desiredPlan === "free"
+                ? "/panel"
+                : `/suscripcion?plan=${desiredPlan}`
+            }
+            className="button button-gold button-large"
+            onClick={() =>
+              window.sessionStorage.removeItem("harle_desired_plan")
+            }
+          >
+            {desiredPlan === "free" ? "Continuar al panel" : "Continuar al pago"}
             <ArrowRight size={18} />
           </Link>
         </div>

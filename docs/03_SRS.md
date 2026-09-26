@@ -83,7 +83,7 @@ Los paneles que todavía no tienen endpoint deben continuar identificados como d
 ### Planes, pagos y suscripción
 
 - **FR-19**: el backend deberá mantener el catálogo de planes, conservar la correspondencia `free`/Gratuito, `basic`/Básico y `max`/Max, y exponer únicamente planes activos y contratables.
-- **FR-20**: la contratación de planes pagos permanecerá deshabilitada hasta que exista el endpoint de checkout.
+- **FR-20**: el frontend deberá obtener `GET /api/plans` e iniciar Básico o Max mediante `POST /api/subscription/checkout`, redirigiendo al checkout hospedado de Mercado Pago.
 - **FR-21**: credenciales, secretos y llamadas privilegiadas a Mercado Pago deberán permanecer exclusivamente en el backend.
 - **FR-22**: el backend deberá correlacionar cada suscripción de Mercado Pago con una única cuenta interna mediante referencias no ambiguas.
 - **FR-23**: el backend deberá validar y procesar notificaciones de Mercado Pago de forma idempotente.
@@ -91,8 +91,10 @@ Los paneles que todavía no tienen endpoint deben continuar identificados como d
 - **FR-25**: el backend deberá sincronizar estado de suscripción, plan y límites exactos del período con el runtime del asistente.
 - **FR-26**: el frontend deberá representar al menos los estados pendiente, activo, vencido, en mora, cancelado y revocado cuando el backend los informe.
 - **FR-27**: el panel deberá mostrar inicio y fin exactos del período vigente y la próxima acción de cobro cuando esté disponible.
-- **FR-28**: cambiar o cancelar un plan deberá mostrar el efecto y su fecha antes de pedir confirmación.
-- **FR-29**: reintentos, reembolsos, prorrateo, períodos de gracia y cambios de plan no deberán implementarse hasta definir su política de producto.
+- **FR-28**: `GET /api/subscription` deberá reconciliar el retorno del checkout y mostrar estado pendiente hasta que el webhook confirme el cobro.
+- **FR-29**: cancelar mediante `POST /api/subscription/cancel` deberá explicar que no habrá nuevos cobros y que el acceso continuará hasta el fin del período.
+- **FR-29A**: durante la beta no habrá cambio directo entre Básico y Max, prorrateo, prueba gratuita ni reembolso automático. El usuario deberá cancelar y contratar el otro plan al finalizar el período.
+- **FR-29B**: un pago rechazado deberá mostrar el acceso pago suspendido hasta que Mercado Pago confirme un reintento aprobado.
 
 ### Vínculo con Telegram
 

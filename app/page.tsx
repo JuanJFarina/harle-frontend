@@ -16,13 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
-import { plans } from "@/lib/demo-data";
-
-const money = new Intl.NumberFormat("es-AR", {
-  style: "currency",
-  currency: "ARS",
-  maximumFractionDigits: 0,
-});
+import { PricingPlans } from "@/components/pricing-plans";
 
 const faqs = [
   {
@@ -430,57 +424,7 @@ export default function HomePage() {
               mensajes multimedia.
             </p>
           </div>
-          <div className="pricing-grid">
-            {plans.map((plan) => (
-              <article
-                className={`price-card ${plan.featured ? "featured" : ""}`}
-                key={plan.code}
-              >
-                {plan.featured && (
-                  <span className="recommended">Más elegido</span>
-                )}
-                <h3>{plan.name}</h3>
-                <div className="price">
-                  <strong>
-                    {plan.price === 0 ? "Gratis" : money.format(plan.price)}
-                  </strong>
-                  {plan.price > 0 && <span>/ mes</span>}
-                </div>
-                <p>
-                  {plan.code === "free"
-                    ? "Para conocer a tu compañero."
-                    : plan.code === "basic"
-                      ? "Para acompañarte todos los días."
-                      : "Para usarlo sin estar contando."}
-                </p>
-                <ul>
-                  <li>
-                    <Check size={16} />
-                    {plan.conversations.toLocaleString("es-AR")} conversaciones
-                  </li>
-                  <li>
-                    <Check size={16} />
-                    {plan.notifications} notificaciones de eventos
-                  </li>
-                  <li>
-                    <Check size={16} />
-                    Check-ins sin consumir cupo
-                  </li>
-                  <li>
-                    <Check size={16} />
-                    Texto, audio e imágenes
-                  </li>
-                </ul>
-                <Link
-                  href={`/registro?plan=${plan.code}`}
-                  className={`button ${plan.featured ? "button-gold" : "button-outline"}`}
-                >
-                  {plan.price === 0 ? "Empezar gratis" : `Elegir ${plan.name}`}
-                  <ArrowRight size={17} />
-                </Link>
-              </article>
-            ))}
-          </div>
+          <PricingPlans />
           <p className="pricing-note">
             Los cupos se renuevan cada mes. Sólo cuentan las conversaciones
             completadas y las notificaciones entregadas.

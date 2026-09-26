@@ -9,10 +9,20 @@ import {
   useEffect,
   useState,
 } from "react";
-import { getPlan } from "@/lib/demo-data";
-import { getSession, HarleApiError, WebSession } from "@/lib/harle-api";
+import {
+  getSession,
+  getSubscription,
+  HarleApiError,
+  Subscription,
+  WebSession,
+} from "@/lib/harle-api";
 
-const DashboardSessionContext = createContext<WebSession | null>(null);
+type DashboardAccount = {
+  session: WebSession;
+  subscription: Subscription;
+};
+
+const DashboardSessionContext = createContext<DashboardAccount | null>(null);
 
 export function DashboardSessionProvider({
   children,
@@ -20,14 +30,17 @@ export function DashboardSessionProvider({
   children: ReactNode;
 }) {
   const router = useRouter();
-  const [session, setSession] = useState<WebSession | null>(null);
+  const [account, setAccount] = useState<DashboardAccount | null>(null);
   const [error, setError] = useState<HarleApiError | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    void getSession(controller.signal)
-      .then((currentSession) => {
-        setSession(currentSession);
+    void Promise.all([
+      getSession(controller.signal),
+      getSubscription(controller.signal),
+    ])
+      .then(([session, subscription]) => {
+        setAccount({ session, subscription });
         setError(null);
       })
       .catch((caught: unknown) => {
@@ -65,7 +78,7 @@ export function DashboardSessionProvider({
     );
   }
 
-  if (!session) {
+  if (!account) {
     return (
       <main className="dashboard-session-state" aria-live="polite">
         <LoaderCircle className="spin" size={28} />
@@ -75,23 +88,23 @@ export function DashboardSessionProvider({
   }
 
   return (
-    <DashboardSessionContext.Provider value={session}>
+    <DashboardSessionContext.Provider value={account}>
       {children}
     </DashboardSessionContext.Provider>
   );
 }
 
 export function DashboardPlanSummary() {
-  const session = useDashboardSession();
-  const plan = getPlan(session.plan_code);
+  const subscription = useDashboardSubscription();
+  const plan = subscription.plan;
 
   return (
     <div className="sidebar-plan">
       <span>
         <Sparkles size={15} />
-        Plan {plan.name}
+        Plan {plan.display_name}
       </span>
-      <strong>{plan.conversations.toLocaleString("es-AR")}</strong>
+      <strong>{plan.conversation_limit.toLocaleString("es-AR")}</strong>
       <small>conversaciones incluidas por período</small>
     </div>
   );
@@ -99,25 +112,33 @@ export function DashboardPlanSummary() {
 
 export function DashboardUserSummary() {
   const session = useDashboardSession();
-  const plan = getPlan(session.plan_code);
+  const subscription = useDashboardSubscription();
 
   return (
     <>
       <span className="profile-avatar">{initials(session.display_name)}</span>
       <span className="profile-name">
         <strong>{firstName(session.display_name)}</strong>
-        <small>Plan {plan.name}</small>
+        <small>Plan {subscription.plan.display_name}</small>
       </span>
     </>
   );
 }
 
 export function useDashboardSession(): WebSession {
-  const session = useContext(DashboardSessionContext);
-  if (!session) {
+  const account = useContext(DashboardSessionContext);
+  if (!account) {
     throw new Error("Dashboard session is unavailable.");
   }
-  return session;
+  return account.session;
+}
+
+export function useDashboardSubscription(): Subscription {
+  const account = useContext(DashboardSessionContext);
+  if (!account) {
+    throw new Error("Dashboard subscription is unavailable.");
+  }
+  return account.subscription;
 }
 
 export function initials(name: string): string {

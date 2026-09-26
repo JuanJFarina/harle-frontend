@@ -7,14 +7,21 @@ export const metadata: Metadata = {
   title: "Ingresar",
 };
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    plan?: string;
+  }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
   return (
     <AuthShell
       eyebrow="Qué bueno verte"
       title="Volvé a tu espacio."
       description="Ingresá para administrar tu cuenta, tus finanzas y tu agenda."
     >
-      <RegistrationFlow mode="login" />
+      <RegistrationFlow mode="login" requestedPlan={params.plan} />
       <p className="auth-switch">
         ¿Todavía no tenés cuenta? <Link href="/registro">Registrate gratis</Link>
       </p>

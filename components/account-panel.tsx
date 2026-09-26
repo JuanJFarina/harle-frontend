@@ -17,12 +17,13 @@ import {
   firstName,
   initials,
   useDashboardSession,
+  useDashboardSubscription,
 } from "@/components/dashboard-session";
-import { getPlan } from "@/lib/demo-data";
 
 export function AccountPanel() {
   const session = useDashboardSession();
-  const plan = getPlan(session.plan_code);
+  const subscription = useDashboardSubscription();
+  const plan = subscription.plan;
   const telegramConnected = session.telegram_link.state === "connected";
   const [frequency, setFrequency] = useState("Media");
   const [proactive, setProactive] = useState(true);
@@ -57,7 +58,7 @@ export function AccountPanel() {
           </span>
           <div>
             <small>Conversaciones incluidas</small>
-            <strong>{plan.conversations.toLocaleString("es-AR")}</strong>
+            <strong>{plan.conversation_limit.toLocaleString("es-AR")}</strong>
             <span>por período mensual</span>
           </div>
           <b>El consumo estará disponible próximamente</b>
@@ -68,7 +69,7 @@ export function AccountPanel() {
           </span>
           <div>
             <small>Notificaciones incluidas</small>
-            <strong>{plan.notifications.toLocaleString("es-AR")}</strong>
+            <strong>{plan.notification_limit.toLocaleString("es-AR")}</strong>
             <span>por período mensual</span>
           </div>
           <b>El consumo estará disponible próximamente</b>
@@ -79,12 +80,12 @@ export function AccountPanel() {
           </span>
           <div>
             <small>Plan actual</small>
-            <strong>{plan.name}</strong>
-            <span>{planPrice(plan.price)}</span>
+            <strong>{plan.display_name}</strong>
+            <span>{planPrice(plan.monthly_price_ars)}</span>
           </div>
           <div className="renewal-row">
             <span>Próxima renovación</span>
-            <b>{formatDate(session.subscription_period_ends_at)}</b>
+            <b>{formatDate(subscription.period_ends_at)}</b>
           </div>
         </article>
       </div>
@@ -239,32 +240,37 @@ export function AccountPanel() {
                 <h2>Suscripción</h2>
                 <p>
                   Activa desde{" "}
-                  {formatDate(session.subscription_period_starts_at)}.
+                  {formatDate(subscription.period_starts_at)}.
                 </p>
               </div>
             </div>
             <dl>
               <div>
                 <dt>Plan</dt>
-                <dd>{plan.name}</dd>
+                <dd>{plan.display_name}</dd>
               </div>
               <div>
                 <dt>Importe</dt>
-                <dd>{planPrice(plan.price)}</dd>
+                <dd>{planPrice(plan.monthly_price_ars)}</dd>
               </div>
               <div>
                 <dt>Período actual</dt>
                 <dd>
-                  {formatShortDate(session.subscription_period_starts_at)} —{" "}
-                  {formatShortDate(session.subscription_period_ends_at)}
+                  {formatShortDate(subscription.period_starts_at)} —{" "}
+                  {formatShortDate(subscription.period_ends_at)}
                 </dd>
               </div>
               <div>
                 <dt>Estado</dt>
-                <dd className="active-text">Activa</dd>
+                <dd className="active-text">
+                  {subscriptionStatus(subscription.status)}
+                </dd>
               </div>
             </dl>
-            <span className="text-action">Planes pagos próximamente</span>
+            <Link href="/suscripcion" className="text-action">
+              Administrar suscripción
+              <ArrowUpRight size={15} />
+            </Link>
           </section>
         </div>
       </div>
@@ -283,11 +289,23 @@ function greeting(): string {
   return "Buenas noches";
 }
 
-function planPrice(price: number): string {
+function planPrice(rawPrice: string): string {
+  const price = Number(rawPrice);
   if (price === 0) {
     return "Sin costo";
   }
   return `ARS ${price.toLocaleString("es-AR")} / mes`;
+}
+
+function subscriptionStatus(status: string): string {
+  const names: Record<string, string> = {
+    active: "Activa",
+    pending: "Pendiente",
+    past_due: "Pago rechazado",
+    cancelled: "Cancelada",
+    manual: "Manual",
+  };
+  return names[status] ?? status;
 }
 
 function formatDate(value: string): string {

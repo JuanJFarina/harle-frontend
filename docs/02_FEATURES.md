@@ -6,7 +6,8 @@
 - **Datos de demostración**: los paneles permiten probar altas, ediciones, eliminaciones, filtros y preferencias sólo en memoria local.
 - **Registro gratuito integrado**: el frontend crea o recupera una cuenta gratuita mediante Google, restaura la sesión y guía la vinculación con Telegram usando el contrato `/api`.
 - **API bajo el origen del frontend**: Next.js reescribe `/api` hacia el backend para que las sesiones funcionen como cookies first-party aunque ambos proyectos estén desplegados en dominios diferentes.
-- **Integración parcial**: pagos, email y contraseña, y la persistencia de los paneles permanecen pendientes.
+- **Suscripciones pagas integradas**: el frontend obtiene planes del backend, inicia checkout hospedado en Mercado Pago y muestra estados pendiente, activo, en mora y cancelado.
+- **Integración parcial**: email y contraseña, y la persistencia de los paneles de perfiles, finanzas y eventos se incorporan por etapas.
 
 ## Producto inicial
 
@@ -36,15 +37,16 @@
 - **Plan gratuito renovable**: el primer acceso activa el plan Gratuito y muestra su período mensual vigente.
 - **Conexión con Telegram**: vincula de manera segura la cuenta web con una única identidad de Telegram.
 - **Continuidad del onboarding**: muestra el estado de cuenta y Telegram, genera un enlace temporal y confirma automáticamente el vínculo.
-- **Suscripciones pagas posteriores**: email y contraseña, Mercado Pago y cambios de plan permanecen fuera de esta primera integración.
+- **Suscripciones pagas beta**: Básico y Max se contratan mediante checkout hospedado de Mercado Pago, se activan sólo por webhook confirmado y pueden cancelarse conservando acceso hasta el fin del período.
+- **Ciclo beta simple**: un pago rechazado suspende el acceso pago; no hay cambio directo entre planes, prorrateo, prueba gratuita ni reembolso automático.
 
 ### Dependencias del backend
 
 - **Identidad web actual**: Google OpenID Connect, sesión y cierre de sesión.
 - **Cuenta gratuita actual**: nombre, código de plan, período vigente y estado de Telegram.
 - **Vínculo actual con Telegram**: creación y consulta de un vínculo temporal y seguro.
-- **Planes públicos posteriores**: catálogo dinámico con nombres, precios, periodicidad y ambos cupos.
-- **Suscripciones posteriores**: checkout, estado, cambio y cancelación mediante Mercado Pago confirmado por el backend.
+- **Planes públicos**: catálogo dinámico con nombres, precios, periodicidad y ambos cupos.
+- **Suscripciones**: checkout, estado y cancelación mediante Mercado Pago confirmado por el backend.
 - **Cuenta posterior**: perfil del usuario, perfil del asistente, proactividad y uso.
 - **Finanzas**: listado, resumen, alta, corrección y eliminación de movimientos propios.
 - **Eventos**: listado, alta, corrección, activación, desactivación y eliminación de eventos personales.
