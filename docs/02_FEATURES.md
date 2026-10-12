@@ -8,7 +8,7 @@
 - **API bajo el origen del frontend**: Next.js reescribe `/api` hacia el backend para que las sesiones funcionen como cookies first-party aunque ambos proyectos estén desplegados en dominios diferentes.
 - **Suscripciones pagas integradas**: el frontend obtiene planes del backend, inicia checkout hospedado en Mercado Pago y muestra estados pendiente, activo, en mora y cancelado.
 - **Agenda integrada**: el panel consulta eventos personales reales, muestra ocurrencias recurrentes calculadas por el backend y permite crear, editar, activar, desactivar y eliminar eventos con recordatorios.
-- **Integración parcial**: email y contraseña, y la persistencia de los paneles de perfiles, finanzas y eventos se incorporan por etapas.
+- **Integración parcial**: email y contraseña, y la persistencia de los paneles de perfiles y finanzas se incorporan por etapas.
 
 ## Producto inicial
 

@@ -21,6 +21,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useDashboardSession } from "@/components/dashboard-session";
@@ -59,21 +60,48 @@ export function EventsPanel() {
   const [view, setView] = useState<EventsView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<HarleApiError | null>(null);
+  const [editorError, setEditorError] = useState<HarleApiError | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<CalendarEvent | null>(null);
   const [allDay, setAllDay] = useState(false);
   const [recurrence, setRecurrence] = useState<RecurrenceKind>("none");
   const [busyEventId, setBusyEventId] = useState<string | null>(null);
+  const requestVersion = useRef(0);
+  const requestController = useRef<AbortController | null>(null);
 
   const range = useMemo(() => monthRange(viewMonth), [viewMonth]);
+  const rangeRef = useRef(range);
+  useEffect(() => {
+    rangeRef.current = range;
+  }, [range]);
+  const beginEventsRequest = useCallback(() => {
+    requestController.current?.abort();
+    const controller = new AbortController();
+    requestController.current = controller;
+    const version = requestVersion.current + 1;
+    requestVersion.current = version;
+    return { controller, version };
+  }, []);
   const loadEvents = useCallback(
-    async (signal?: AbortSignal) => {
+    async (showLoading = false) => {
+      const { controller, version } = beginEventsRequest();
+      const requestedRange = rangeRef.current;
+      if (showLoading) {
+        setLoading(true);
+      }
       try {
-        const result = await getEvents(range.start, range.end, signal);
+        const result = await getEvents(
+          requestedRange.start,
+          requestedRange.end,
+          controller.signal,
+        );
+        if (version !== requestVersion.current) {
+          return;
+        }
         setView(result);
         setError(null);
       } catch (caught) {
-        if (signal?.aborted) {
+        if (controller.signal.aborted || version !== requestVersion.current) {
           return;
         }
         if (caught instanceof HarleApiError && caught.status === 401) {
@@ -82,23 +110,29 @@ export function EventsPanel() {
         }
         setError(asApiError(caught));
       } finally {
-        if (!signal?.aborted) {
+        if (
+          !controller.signal.aborted &&
+          version === requestVersion.current
+        ) {
           setLoading(false);
         }
       }
     },
-    [range.end, range.start, router],
+    [beginEventsRequest, router],
   );
 
   useEffect(() => {
-    const controller = new AbortController();
+    const { controller, version } = beginEventsRequest();
     void getEvents(range.start, range.end, controller.signal)
       .then((result) => {
+        if (version !== requestVersion.current) {
+          return;
+        }
         setView(result);
         setError(null);
       })
       .catch((caught: unknown) => {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted || version !== requestVersion.current) {
           return;
         }
         if (caught instanceof HarleApiError && caught.status === 401) {
@@ -108,31 +142,52 @@ export function EventsPanel() {
         setError(asApiError(caught));
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
+        if (
+          !controller.signal.aborted &&
+          version === requestVersion.current
+        ) {
           setLoading(false);
         }
       });
-    return () => controller.abort();
-  }, [range.end, range.start, router]);
+    return () => {
+      if (version === requestVersion.current) {
+        controller.abort();
+      }
+    };
+  }, [beginEventsRequest, range.end, range.start, router]);
 
+  const visibleView =
+    view?.start_date === range.start && view.end_date === range.end
+      ? view
+      : null;
   const eventsById = useMemo(
-    () => new Map(view?.events.map((event) => [event.event_id, event]) ?? []),
-    [view?.events],
+    () =>
+      new Map(
+        visibleView?.events.map((event) => [event.event_id, event]) ?? [],
+      ),
+    [visibleView?.events],
   );
   const occurrencesByDate = useMemo(
-    () => groupOccurrencesByDate(view?.occurrences ?? []),
-    [view?.occurrences],
+    () =>
+      groupOccurrencesByDate(
+        visibleView?.occurrences.filter(
+          (occurrence) =>
+            eventsById.get(occurrence.event_id)?.status === "active",
+        ) ?? [],
+      ),
+    [eventsById, visibleView?.occurrences],
   );
   const calendarDays = useMemo(() => calendarGrid(viewMonth), [viewMonth]);
   const upcoming = useMemo(
-    () => upcomingEntries(view, eventsById),
-    [eventsById, view],
+    () => upcomingEntries(visibleView, eventsById),
+    [eventsById, visibleView],
   );
 
   function openNew() {
     setEditing(null);
     setAllDay(false);
     setRecurrence("none");
+    setEditorError(null);
     setEditorOpen(true);
   }
 
@@ -140,6 +195,7 @@ export function EventsPanel() {
     setEditing(event);
     setAllDay(event.all_day);
     setRecurrence(recurrenceKind(event));
+    setEditorError(null);
     setEditorOpen(true);
   }
 
@@ -147,7 +203,7 @@ export function EventsPanel() {
     submitEvent.preventDefault();
     const form = new FormData(submitEvent.currentTarget);
     setBusyEventId(editing?.event_id ?? "new");
-    setError(null);
+    setEditorError(null);
     try {
       const input = eventInput(form, allDay, recurrence, session.timezone);
       if (editing) {
@@ -159,7 +215,7 @@ export function EventsPanel() {
       setEditorOpen(false);
       setEditing(null);
     } catch (caught) {
-      handleMutationError(caught, router.replace, setError);
+      handleMutationError(caught, router.replace, setEditorError);
     } finally {
       setBusyEventId(null);
     }
@@ -203,9 +259,12 @@ export function EventsPanel() {
   }
 
   const activeCount =
-    view?.events.filter((event) => event.status === "active").length ?? 0;
+    visibleView?.events.filter((event) => event.status === "active").length ?? 0;
   const recurringCount =
-    view?.events.filter((event) => event.recurrence_rule !== null).length ?? 0;
+    visibleView?.events.filter(
+      (event) =>
+        event.status === "active" && event.recurrence_rule !== null,
+    ).length ?? 0;
 
   return (
     <>
@@ -228,26 +287,42 @@ export function EventsPanel() {
             {error.message}
             {error.requestId && <small>Referencia: {error.requestId}</small>}
           </span>
-          <button type="button" onClick={() => void loadEvents()}>
+          <button type="button" onClick={() => void loadEvents(true)}>
             Reintentar
           </button>
         </div>
       )}
 
-      <div className="events-summary">
-        <Summary icon={<CalendarDays size={20} />} value={activeCount} label="eventos activos" />
-        <Summary icon={<Repeat2 size={20} />} value={recurringCount} label="eventos recurrentes" />
-        <Summary
-          icon={<BellRing size={20} />}
-          value={view?.notification_quota.remaining ?? "—"}
-          label="notificaciones disponibles"
-        />
-      </div>
+      {visibleView && (
+        <div className="events-summary">
+          <Summary
+            icon={<CalendarDays size={20} />}
+            value={activeCount}
+            label="eventos activos en este mes"
+          />
+          <Summary
+            icon={<Repeat2 size={20} />}
+            value={recurringCount}
+            label="eventos recurrentes activos este mes"
+          />
+          <Summary
+            icon={<BellRing size={20} />}
+            value={visibleView.notification_quota.remaining}
+            label="notificaciones disponibles"
+          />
+        </div>
+      )}
 
       {loading ? (
         <div className="dashboard-session-state" aria-live="polite">
           <LoaderCircle className="spin" size={28} />
           <strong>Cargando tu agenda…</strong>
+        </div>
+      ) : !visibleView ? (
+        <div className="dashboard-session-state" role="alert">
+          <AlertCircle size={28} />
+          <strong>No pudimos cargar tu agenda</strong>
+          <span>Reintentá cuando recuperes la conexión.</span>
         </div>
       ) : (
         <div className="events-layout">
@@ -255,7 +330,7 @@ export function EventsPanel() {
             <div className="calendar-toolbar">
               <div>
                 <h2>{monthName(viewMonth)}</h2>
-                <p>Los horarios se muestran en {view?.timezone ?? session.timezone}</p>
+                <p>Los horarios se muestran en {visibleView.timezone}</p>
               </div>
               <div>
                 <button
@@ -301,8 +376,7 @@ export function EventsPanel() {
               {calendarDays.map((day) => {
                 const occurrences = occurrencesByDate.get(day.iso) ?? [];
                 return (
-                  <button
-                    type="button"
+                  <div
                     className={[
                       "calendar-cell",
                       day.inMonth ? "" : "outside",
@@ -320,7 +394,7 @@ export function EventsPanel() {
                       </small>
                     ))}
                     {occurrences.length > 2 && <small>+{occurrences.length - 2}</small>}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -394,7 +468,7 @@ export function EventsPanel() {
                 </article>
               ))}
             </div>
-            {view && (
+            {visibleView && (
               <p className="notification-quota-note">
                 Sólo las notificaciones entregadas consumen el cupo, incluso si
                 después eliminás el evento.
@@ -412,9 +486,13 @@ export function EventsPanel() {
           recurrence={recurrence}
           timezone={session.timezone}
           busy={busyEventId !== null}
+          error={editorError}
           onAllDayChange={setAllDay}
           onRecurrenceChange={setRecurrence}
-          onClose={() => setEditorOpen(false)}
+          onClose={() => {
+            setEditorOpen(false);
+            setEditorError(null);
+          }}
           onSubmit={saveEvent}
         />
       )}
@@ -428,6 +506,7 @@ function EventEditor({
   recurrence,
   timezone,
   busy,
+  error,
   onAllDayChange,
   onRecurrenceChange,
   onClose,
@@ -438,6 +517,7 @@ function EventEditor({
   recurrence: RecurrenceKind;
   timezone: string;
   busy: boolean;
+  error: HarleApiError | null;
   onAllDayChange: (value: boolean) => void;
   onRecurrenceChange: (value: RecurrenceKind) => void;
   onClose: () => void;
@@ -593,6 +673,17 @@ function EventEditor({
               </small>
             </label>
           )}
+          {error && (
+            <div className="inline-api-error" role="alert">
+              <AlertCircle size={16} />
+              <span>
+                {error.message}
+                {error.requestId && (
+                  <small>Referencia: {error.requestId}</small>
+                )}
+              </span>
+            </div>
+          )}
           <div className="modal-actions">
             <button type="button" className="button button-outline" onClick={onClose}>
               Cancelar
@@ -711,28 +802,22 @@ function upcomingEntries(
   if (!view) {
     return [];
   }
-  const active = view.occurrences.flatMap((occurrence) => {
-    const event = eventsById.get(occurrence.event_id);
-    return event
-      ? [{ event, occurrence, key: `${event.event_id}-${occurrence.local_start}` }]
-      : [];
-  });
-  const disabled = view.events
-    .filter((event) => event.status === "disabled")
-    .map((event) => ({
-      event,
-      occurrence: {
-        event_id: event.event_id,
-        local_start: event.local_start,
-        local_end: event.local_end,
-        timezone: event.timezone,
-        all_day: event.all_day,
-      },
-      key: `${event.event_id}-disabled`,
-    }));
-  return [...active, ...disabled].sort((left, right) =>
-    left.occurrence.local_start.localeCompare(right.occurrence.local_start),
-  );
+  return view.occurrences
+    .flatMap((occurrence) => {
+      const event = eventsById.get(occurrence.event_id);
+      return event
+        ? [
+            {
+              event,
+              occurrence,
+              key: `${event.event_id}-${occurrence.local_start}`,
+            },
+          ]
+        : [];
+    })
+    .sort((left, right) =>
+      left.occurrence.local_start.localeCompare(right.occurrence.local_start),
+    );
 }
 
 function recurrenceKind(event: CalendarEvent): RecurrenceKind {
