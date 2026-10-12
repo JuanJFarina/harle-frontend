@@ -16,16 +16,6 @@ export type Expense = {
   type: "Gasto" | "Reintegro";
 };
 
-export type PersonalEvent = {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  recurrence: string;
-  active: boolean;
-};
-
 export const plans: Plan[] = [
   {
     name: "Gratuito",
@@ -87,35 +77,5 @@ export const initialExpenses: Expense[] = [
     date: "16 sep",
     amount: 32700,
     type: "Gasto",
-  },
-];
-
-export const initialEvents: PersonalEvent[] = [
-  {
-    id: "event-1",
-    title: "Pagar alquiler",
-    description: "Transferir antes del mediodía",
-    date: "01 oct",
-    time: "09:00",
-    recurrence: "Mensual",
-    active: true,
-  },
-  {
-    id: "event-2",
-    title: "Turno con el dentista",
-    description: "Consultorio de Palermo",
-    date: "03 oct",
-    time: "16:30",
-    recurrence: "No se repite",
-    active: true,
-  },
-  {
-    id: "event-3",
-    title: "Revisar gastos de la semana",
-    description: "Mirar el resumen y ajustar presupuesto",
-    date: "06 oct",
-    time: "18:00",
-    recurrence: "Semanal",
-    active: true,
   },
 ];

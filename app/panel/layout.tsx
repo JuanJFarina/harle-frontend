@@ -23,7 +23,7 @@ export default function PanelLayout({ children }: { children: ReactNode }) {
 
         <div className="dashboard-body">
           <header className="dashboard-topbar">
-            <span className="demo-badge">Panel parcialmente demo</span>
+            <span className="demo-badge">Cuenta y finanzas parcialmente demo</span>
             <div className="topbar-actions">
               <button
                 type="button"

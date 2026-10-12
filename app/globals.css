@@ -3681,6 +3681,92 @@ h3 {
   background: rgba(255, 255, 255, 0.035);
 }
 
+.event-modal {
+  width: min(660px, 100%);
+}
+
+.events-api-error {
+  margin-bottom: 18px;
+}
+
+.events-api-error > button {
+  margin-left: auto;
+  color: inherit;
+  text-decoration: underline;
+}
+
+.events-empty {
+  display: grid;
+  min-height: 170px;
+  color: var(--muted);
+  gap: 8px;
+  place-items: center;
+  align-content: center;
+  text-align: center;
+}
+
+.events-empty p,
+.notification-quota-note {
+  margin: 0;
+  font-size: 0.56rem;
+}
+
+.notification-quota-note {
+  padding-top: 14px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  line-height: 1.5;
+}
+
+.modal-form .checkbox-label {
+  display: flex;
+  flex-direction: row;
+  gap: 9px;
+  align-items: center;
+}
+
+.modal-form .checkbox-label input,
+.weekday-options input {
+  width: 16px;
+  min-height: 16px;
+  margin: 0;
+  accent-color: var(--gold-300);
+}
+
+.form-help {
+  color: var(--muted);
+  font-size: 0.55rem;
+}
+
+.recurrence-fieldset {
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.recurrence-fieldset legend {
+  padding: 0 5px;
+  color: var(--muted-light);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.weekday-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.weekday-options label {
+  display: flex;
+  padding: 7px 9px;
+  flex-direction: row;
+  gap: 5px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.035);
+  border-radius: 7px;
+}
+
 .modal-actions {
   display: flex;
   margin-top: 7px;

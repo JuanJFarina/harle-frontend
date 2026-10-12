@@ -6,7 +6,7 @@ Este proyecto contiene la experiencia web de un asistente de IA todavía sin nom
 
 El repositorio `harle-backend` es la fuente de verdad para identidades, autenticación, suscripciones, perfiles, cupos, vínculo con Telegram, gastos y eventos. Este frontend no debe reproducir reglas de negocio ni decidir por sí mismo si una modificación fue aceptada.
 
-La primera integración real permite crear o recuperar una cuenta gratuita mediante Google, mantener una sesión segura y vincular una identidad de Telegram. Pagos, email y contraseña, y la administración persistente de los paneles permanecen pendientes.
+La integración real permite crear o recuperar una cuenta gratuita mediante Google, mantener una sesión segura, vincular una identidad de Telegram, administrar la suscripción y gestionar eventos personales persistentes. Email y contraseña, perfiles y finanzas permanecen pendientes.
 
 ## Entorno
 
@@ -52,7 +52,8 @@ El catálogo detallado y las reglas de estos endpoints se definen en el SRS del 
 - **API-04 Google**: `GET /api/auth/google/start` y `GET /api/auth/google/callback`.
 - **API-05 Sesión**: `GET /api/session` y `POST /api/auth/logout`.
 - **API-06 Telegram**: `GET` y `POST /api/account/telegram-link`.
-- **API-07 Alcance posterior**: catálogo público, pagos, email y contraseña, mutaciones de cuenta, finanzas, eventos, exportación, eliminación y desvinculación de Telegram permanecen diferidos.
+- **API-07 Eventos**: `GET /api/events` y mutaciones `POST /api/events` permiten administrar únicamente eventos personales propios, con sesión, CSRF, zona horaria y cupo de notificaciones resueltos por el backend.
+- **API-08 Alcance posterior**: email y contraseña, mutaciones de cuenta, finanzas, exportación, eliminación y desvinculación de Telegram permanecen diferidos.
 
 Los paneles que todavía no tienen endpoint deben continuar identificados como demostración y no pueden presentar sus acciones como persistentes.
 
