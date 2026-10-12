@@ -3,11 +3,12 @@
 ## Estado actual
 
 - **Prototipo navegable**: la landing, el acceso, el registro y los paneles de cuenta, finanzas y eventos están implementados en Next.js.
-- **Datos de demostración**: los paneles permiten probar altas, ediciones, eliminaciones, filtros y preferencias sólo en memoria local.
+- **Datos de demostración parciales**: finanzas y las preferencias editables de cuenta siguen funcionando sólo en memoria local.
 - **Registro gratuito integrado**: el frontend crea o recupera una cuenta gratuita mediante Google, restaura la sesión y guía la vinculación con Telegram usando el contrato `/api`.
 - **API bajo el origen del frontend**: Next.js reescribe `/api` hacia el backend para que las sesiones funcionen como cookies first-party aunque ambos proyectos estén desplegados en dominios diferentes.
 - **Suscripciones pagas integradas**: el frontend obtiene planes del backend, inicia checkout hospedado en Mercado Pago y muestra estados pendiente, activo, en mora y cancelado.
-- **Integración parcial**: email y contraseña, y la persistencia de los paneles de perfiles, finanzas y eventos se incorporan por etapas.
+- **Agenda integrada**: el panel consulta eventos personales reales, muestra ocurrencias recurrentes calculadas por el backend y permite crear, editar, activar, desactivar y eliminar eventos con recordatorios.
+- **Integración parcial**: email y contraseña, y la persistencia de los paneles de perfiles y finanzas se incorporan por etapas.
 
 ## Producto inicial
 
@@ -49,7 +50,7 @@
 - **Suscripciones**: checkout, estado y cancelación mediante Mercado Pago confirmado por el backend.
 - **Cuenta posterior**: perfil del usuario, perfil del asistente, proactividad y uso.
 - **Finanzas**: listado, resumen, alta, corrección y eliminación de movimientos propios.
-- **Eventos**: listado, alta, corrección, activación, desactivación y eliminación de eventos personales.
+- **Eventos**: listado por mes, ocurrencias, alta, corrección, activación, desactivación y eliminación de eventos personales mediante la API autenticada.
 - **Privacidad**: exportación y eliminación de cuenta bajo la política aprobada.
 
 ### Panel de cuenta

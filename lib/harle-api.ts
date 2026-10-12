@@ -12,6 +12,7 @@ export type TelegramLink = TelegramLinkStatus & {
 export type WebSession = {
   user_id: string;
   display_name: string;
+  timezone: string;
   plan_code: string;
   subscription_period_starts_at: string;
   subscription_period_ends_at: string;
@@ -47,6 +48,67 @@ export type Checkout = {
   plan_code: string;
   status: string;
   checkout_url: string;
+};
+
+export type EventRecurrence =
+  | { week_days: string[] }
+  | { month_days: number[] };
+
+export type CalendarEvent = {
+  event_id: string;
+  title: string;
+  description: string;
+  local_start: string;
+  local_end: string;
+  timezone: string;
+  all_day: boolean;
+  event_type: "user_event";
+  status: "active" | "disabled";
+  recurrence_rule: EventRecurrence | null;
+  notification_window_start: string;
+  notify_minutes_before: number;
+  last_notified_at: string | null;
+};
+
+export type CalendarOccurrence = {
+  event_id: string;
+  local_start: string;
+  local_end: string;
+  timezone: string;
+  all_day: boolean;
+};
+
+export type NotificationQuota = {
+  period_limit: number;
+  remaining: number;
+  period_ends_at: string;
+};
+
+export type EventsView = {
+  start_date: string;
+  end_date: string;
+  timezone: string;
+  events: CalendarEvent[];
+  occurrences: CalendarOccurrence[];
+  notification_quota: NotificationQuota;
+};
+
+export type EventInput = {
+  title: string;
+  description: string;
+  starts_at?: string;
+  ends_at?: string;
+  start_date?: string;
+  end_date?: string;
+  timezone?: string;
+  notify_minutes_before: number;
+  recurrence_rule: EventRecurrence | null;
+};
+
+export type EventMutation = {
+  operation: string;
+  event: CalendarEvent;
+  notification_quota: NotificationQuota;
 };
 
 type ErrorEnvelope = {
@@ -141,6 +203,67 @@ export async function logout(csrfToken: string): Promise<void> {
     headers: {
       "X-CSRF-Token": csrfToken,
     },
+  });
+}
+
+export async function getEvents(
+  startDate: string,
+  endDate: string,
+  signal?: AbortSignal,
+): Promise<EventsView> {
+  const query = new URLSearchParams({
+    start_date: startDate,
+    end_date: endDate,
+    include_disabled: "true",
+  });
+  return request<EventsView>(`/api/events?${query}`, { signal });
+}
+
+export async function createEvent(
+  event: EventInput,
+  csrfToken: string,
+): Promise<EventMutation> {
+  return eventMutation("/api/events", csrfToken, event);
+}
+
+export async function updateEvent(
+  eventId: string,
+  event: EventInput,
+  csrfToken: string,
+): Promise<EventMutation> {
+  return eventMutation(`/api/events/${eventId}`, csrfToken, event);
+}
+
+export async function setEventEnabled(
+  eventId: string,
+  enabled: boolean,
+  csrfToken: string,
+): Promise<EventMutation> {
+  return eventMutation(
+    `/api/events/${eventId}/${enabled ? "enable" : "disable"}`,
+    csrfToken,
+  );
+}
+
+export async function deleteEvent(
+  eventId: string,
+  csrfToken: string,
+): Promise<EventMutation> {
+  return eventMutation(`/api/events/${eventId}/delete`, csrfToken);
+}
+
+function eventMutation(
+  path: string,
+  csrfToken: string,
+  body?: EventInput,
+): Promise<EventMutation> {
+  return request<EventMutation>(path, {
+    method: "POST",
+    headers: {
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      "X-CSRF-Token": csrfToken,
+    },
+    body: body ? JSON.stringify(body) : undefined,
   });
 }
 
