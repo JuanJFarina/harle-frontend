@@ -3538,6 +3538,22 @@ h3 {
   opacity: 0.2;
 }
 
+button.calendar-cell.with-event {
+  cursor: pointer;
+}
+
+button.calendar-cell.with-event:hover,
+button.calendar-cell.with-event:focus-visible,
+.calendar-cell.focused {
+  background: rgba(223, 189, 104, 0.055);
+}
+
+button.calendar-cell.with-event:focus-visible,
+.calendar-cell.focused {
+  outline: 1px solid rgba(223, 189, 104, 0.48);
+  outline-offset: -1px;
+}
+
 .upcoming-list {
   display: flex;
   margin-top: 18px;

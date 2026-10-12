@@ -66,6 +66,7 @@ export function EventsPanel() {
   const [allDay, setAllDay] = useState(false);
   const [recurrence, setRecurrence] = useState<RecurrenceKind>("none");
   const [busyEventId, setBusyEventId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const requestVersion = useRef(0);
   const requestController = useRef<AbortController | null>(null);
 
@@ -178,10 +179,38 @@ export function EventsPanel() {
     [eventsById, visibleView?.occurrences],
   );
   const calendarDays = useMemo(() => calendarGrid(viewMonth), [viewMonth]);
-  const upcoming = useMemo(
+  const monthEntries = useMemo(
     () => upcomingEntries(visibleView, eventsById),
     [eventsById, visibleView],
   );
+  const today = todayIso(session.timezone);
+  const currentMonth = monthStart(parseIsoDate(today));
+  const isCurrentMonth = currentMonth.getTime() === viewMonth.getTime();
+  const isPastMonth = viewMonth.getTime() < currentMonth.getTime();
+  const listedEntries = useMemo(
+    () =>
+      monthEntries.filter(({ event, occurrence }) => {
+        if (selectedDate) {
+          return occurrenceDates(occurrence).includes(selectedDate);
+        }
+        if (!isCurrentMonth) {
+          return true;
+        }
+        return (
+          event.status === "disabled" ||
+          occurrence.local_end.slice(0, 10) >= today
+        );
+      }),
+    [isCurrentMonth, monthEntries, selectedDate, today],
+  );
+  const listTitle = selectedDate
+    ? "Eventos del día"
+    : isPastMonth
+      ? "Eventos del mes"
+      : "Próximos eventos";
+  const listSubtitle = selectedDate
+    ? fullDateName(selectedDate)
+    : monthName(viewMonth);
 
   function openNew() {
     setEditing(null);
@@ -338,6 +367,7 @@ export function EventsPanel() {
                   aria-label="Mes anterior"
                   onClick={() => {
                     setLoading(true);
+                    setSelectedDate(null);
                     setViewMonth(addMonths(viewMonth, -1));
                   }}
                 >
@@ -347,10 +377,8 @@ export function EventsPanel() {
                   type="button"
                   className="today-button"
                   onClick={() => {
-                    const currentMonth = monthStart(
-                      parseIsoDate(todayIso(session.timezone)),
-                    );
                     setLoading(true);
+                    setSelectedDate(null);
                     if (currentMonth.getTime() === viewMonth.getTime()) {
                       void loadEvents();
                       return;
@@ -365,6 +393,7 @@ export function EventsPanel() {
                   aria-label="Mes siguiente"
                   onClick={() => {
                     setLoading(true);
+                    setSelectedDate(null);
                     setViewMonth(addMonths(viewMonth, 1));
                   }}
                 >
@@ -380,18 +409,17 @@ export function EventsPanel() {
               ))}
               {calendarDays.map((day) => {
                 const occurrences = occurrencesByDate.get(day.iso) ?? [];
-                return (
-                  <div
-                    className={[
-                      "calendar-cell",
-                      day.inMonth ? "" : "outside",
-                      day.iso === todayIso(session.timezone) ? "selected" : "",
-                      occurrences.length ? "with-event" : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" ")}
-                    key={day.iso}
-                  >
+                const className = [
+                  "calendar-cell",
+                  day.inMonth ? "" : "outside",
+                  day.iso === today ? "selected" : "",
+                  day.iso === selectedDate ? "focused" : "",
+                  occurrences.length ? "with-event" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+                const content = (
+                  <>
                     <span>{day.day}</span>
                     {occurrences.slice(0, 2).map((occurrence) => (
                       <small key={`${occurrence.event_id}-${occurrence.local_start}`}>
@@ -399,6 +427,28 @@ export function EventsPanel() {
                       </small>
                     ))}
                     {occurrences.length > 2 && <small>+{occurrences.length - 2}</small>}
+                  </>
+                );
+                return occurrences.length ? (
+                  <button
+                    type="button"
+                    className={className}
+                    key={day.iso}
+                    aria-pressed={day.iso === selectedDate}
+                    aria-label={`${occurrences.length} ${
+                      occurrences.length === 1 ? "evento" : "eventos"
+                    } el ${fullDateName(day.iso)}`}
+                    onClick={() =>
+                      setSelectedDate((current) =>
+                        current === day.iso ? null : day.iso,
+                      )
+                    }
+                  >
+                    {content}
+                  </button>
+                ) : (
+                  <div className={className} key={day.iso}>
+                    {content}
                   </div>
                 );
               })}
@@ -408,18 +458,24 @@ export function EventsPanel() {
           <aside className="panel-card upcoming-card">
             <div className="panel-card-title-row">
               <div>
-                <h2>Próximos eventos</h2>
-                <p>{monthName(viewMonth)}</p>
+                <h2>{listTitle}</h2>
+                <p>{listSubtitle}</p>
               </div>
             </div>
             <div className="upcoming-list">
-              {upcoming.length === 0 && (
+              {listedEntries.length === 0 && (
                 <div className="events-empty">
                   <CalendarDays size={24} />
-                  <p>No tenés eventos en este mes.</p>
+                  <p>
+                    {selectedDate
+                      ? "No tenés eventos para este día."
+                      : isCurrentMonth
+                        ? "No tenés próximos eventos este mes."
+                        : "No tenés eventos en este mes."}
+                  </p>
                 </div>
               )}
-              {upcoming.map(({ event, occurrence, key }) => (
+              {listedEntries.map(({ event, occurrence, key }) => (
                 <article
                   className={`upcoming-event ${event.status === "active" ? "" : "disabled"}`}
                   key={key}
@@ -438,7 +494,9 @@ export function EventsPanel() {
                     </span>
                     <small>
                       <Repeat2 size={12} />
-                      {recurrenceLabel(event)}
+                      {event.status === "disabled"
+                        ? `Pausado · ${recurrenceLabel(event)}`
+                        : recurrenceLabel(event)}
                     </small>
                   </div>
                   <div className="upcoming-actions">
@@ -907,6 +965,15 @@ function monthName(value: Date): string {
     timeZone: "UTC",
   }).format(value);
   return label[0].toUpperCase() + label.slice(1);
+}
+
+function fullDateName(value: string): string {
+  return new Intl.DateTimeFormat("es-AR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(parseIsoDate(value));
 }
 
 function dateDay(value: string): string {
