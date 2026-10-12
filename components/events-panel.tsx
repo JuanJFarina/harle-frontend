@@ -347,10 +347,15 @@ export function EventsPanel() {
                   type="button"
                   className="today-button"
                   onClick={() => {
-                    setLoading(true);
-                    setViewMonth(
-                      monthStart(parseIsoDate(todayIso(session.timezone))),
+                    const currentMonth = monthStart(
+                      parseIsoDate(todayIso(session.timezone)),
                     );
+                    setLoading(true);
+                    if (currentMonth.getTime() === viewMonth.getTime()) {
+                      void loadEvents();
+                      return;
+                    }
+                    setViewMonth(currentMonth);
                   }}
                 >
                   Hoy
