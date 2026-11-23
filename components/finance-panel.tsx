@@ -18,6 +18,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useDashboardSession } from "@/components/dashboard-session";
@@ -77,41 +78,75 @@ export function FinancePanel() {
   const [category, setCategory] = useState<ExpenseCategory | "all">("all");
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseTransaction | null>(null);
+  const selectedMonthRef = useRef(selectedMonth);
+  const requestIdRef = useRef(0);
 
   const load = useCallback(
-    async (signal?: AbortSignal) => {
-      const [year, month] = selectedMonth.split("-").map(Number);
+    async (monthToLoad: string, signal?: AbortSignal) => {
+      const requestId = ++requestIdRef.current;
+      const [year, month] = monthToLoad.split("-").map(Number);
       try {
-        setDashboard(await getFinanceDashboard(year, month, signal));
-        setError(null);
+        const result = await getFinanceDashboard(year, month, signal);
+        if (
+          !signal?.aborted &&
+          requestId === requestIdRef.current &&
+          monthToLoad === selectedMonthRef.current
+        ) {
+          setDashboard(result);
+          setError(null);
+        }
       } catch (caught) {
-        if (!signal?.aborted) {
+        if (
+          !signal?.aborted &&
+          requestId === requestIdRef.current &&
+          monthToLoad === selectedMonthRef.current
+        ) {
+          setDashboard(null);
           setError(apiMessage(caught));
         }
       } finally {
-        if (!signal?.aborted) {
+        if (
+          !signal?.aborted &&
+          requestId === requestIdRef.current &&
+          monthToLoad === selectedMonthRef.current
+        ) {
           setLoading(false);
         }
       }
     },
-    [selectedMonth],
+    [],
   );
 
   useEffect(() => {
     const controller = new AbortController();
+    const requestId = ++requestIdRef.current;
     const [year, month] = selectedMonth.split("-").map(Number);
     void getFinanceDashboard(year, month, controller.signal)
       .then((result) => {
-        setDashboard(result);
-        setError(null);
+        if (
+          requestId === requestIdRef.current &&
+          selectedMonth === selectedMonthRef.current
+        ) {
+          setDashboard(result);
+          setError(null);
+        }
       })
       .catch((caught: unknown) => {
-        if (!controller.signal.aborted) {
+        if (
+          !controller.signal.aborted &&
+          requestId === requestIdRef.current &&
+          selectedMonth === selectedMonthRef.current
+        ) {
+          setDashboard(null);
           setError(apiMessage(caught));
         }
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
+        if (
+          !controller.signal.aborted &&
+          requestId === requestIdRef.current &&
+          selectedMonth === selectedMonthRef.current
+        ) {
           setLoading(false);
         }
       });
@@ -132,8 +167,7 @@ export function FinancePanel() {
     setSaving(true);
     try {
       await action();
-      await load();
-      setError(null);
+      await load(selectedMonthRef.current);
       return true;
     } catch (caught) {
       setError(apiMessage(caught));
@@ -250,6 +284,9 @@ export function FinancePanel() {
             type="month"
             value={selectedMonth}
             onChange={(event) => {
+              selectedMonthRef.current = event.target.value;
+              setDashboard(null);
+              setError(null);
               setLoading(true);
               setSelectedMonth(event.target.value);
             }}
@@ -307,7 +344,11 @@ export function FinancePanel() {
             </div>
 
             <div className="panel-columns">
-              <form className="panel-card settings-card" onSubmit={submitIncome}>
+              <form
+                key={`${selectedMonth}-${dashboard.income?.effective_on ?? "none"}-${dashboard.income?.amount ?? "none"}`}
+                className="panel-card settings-card"
+                onSubmit={submitIncome}
+              >
                 <div className="panel-card-title-row">
                   <div>
                     <h2>Ingreso neto mensual</h2>

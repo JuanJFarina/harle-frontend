@@ -3355,12 +3355,12 @@ h3 {
   place-items: center;
 }
 
-.transaction-mark.gasto {
+.transaction-mark.expense {
   color: #e8b17a;
   background: rgba(232, 177, 122, 0.08);
 }
 
-.transaction-mark.reintegro {
+.transaction-mark.refund {
   color: var(--teal-400);
   background: rgba(80, 194, 178, 0.08);
 }
