@@ -6,7 +6,7 @@ Este proyecto contiene la experiencia web de un asistente de IA todavía sin nom
 
 El repositorio `harle-backend` es la fuente de verdad para identidades, autenticación, suscripciones, perfiles, cupos, vínculo con Telegram, gastos y eventos. Este frontend no debe reproducir reglas de negocio ni decidir por sí mismo si una modificación fue aceptada.
 
-La integración real permite crear o recuperar una cuenta gratuita mediante Google, mantener una sesión segura, vincular una identidad de Telegram, administrar la suscripción y gestionar eventos personales persistentes. Email y contraseña, perfiles y finanzas permanecen pendientes.
+La integración real permite crear o recuperar una cuenta gratuita mediante Google, mantener una sesión segura, vincular una identidad de Telegram, administrar la suscripción y gestionar eventos y finanzas personales persistentes. Email y contraseña y las preferencias de perfil permanecen pendientes.
 
 ## Entorno
 
@@ -53,7 +53,8 @@ El catálogo detallado y las reglas de estos endpoints se definen en el SRS del 
 - **API-05 Sesión**: `GET /api/session` y `POST /api/auth/logout`.
 - **API-06 Telegram**: `GET` y `POST /api/account/telegram-link`.
 - **API-07 Eventos**: `GET /api/events` y mutaciones `POST /api/events` permiten administrar únicamente eventos personales propios, con sesión, CSRF, zona horaria y cupo de notificaciones resueltos por el backend.
-- **API-08 Alcance posterior**: email y contraseña, mutaciones de cuenta, finanzas, exportación, eliminación y desvinculación de Telegram permanecen diferidos.
+- **API-08 Finanzas**: `GET /api/finances/dashboard` y las mutaciones bajo `/api/finances` administran ingresos históricos, presupuesto actual y movimientos propios con sesión y CSRF.
+- **API-09 Alcance posterior**: email y contraseña, mutaciones de cuenta, exportación, eliminación y desvinculación de Telegram permanecen diferidos.
 
 Los paneles que todavía no tienen endpoint deben continuar identificados como demostración y no pueden presentar sus acciones como persistentes.
 
@@ -120,7 +121,7 @@ Los paneles que todavía no tienen endpoint deben continuar identificados como d
 
 ### Finanzas personales
 
-- **FR-45**: los futuros endpoints financieros deberán resolver al propietario desde la sesión y nunca aceptar otro usuario como autoridad desde el cliente.
+- **FR-45**: los endpoints financieros deberán resolver al propietario desde la sesión y nunca aceptar otro usuario como autoridad desde el cliente.
 - **FR-46**: el panel deberá listar movimientos por rango de fechas con paginación o carga acotada.
 - **FR-47**: el panel deberá filtrar por tipo, categoría y período sin perder la zona horaria del usuario.
 - **FR-48**: un movimiento deberá contener tipo gasto o reintegro, monto positivo, moneda ARS, fecha, categoría y descripción.
@@ -132,6 +133,10 @@ Los paneles que todavía no tienen endpoint deben continuar identificados como d
 - **FR-54**: el backend deberá calcular montos y distribución de centavos; el frontend sólo deberá mostrar el resultado confirmado.
 - **FR-55**: los resúmenes deberán mostrar gastos, reintegros y neto sin confundir un reintegro con un monto negativo ingresado.
 - **FR-56**: las estadísticas deberán poder agruparse al menos por día, mes y categoría.
+- **FR-56A**: el usuario deberá guardar ingresos netos mensuales con fecha de vigencia y consultar el valor histórico aplicable al mes analizado.
+- **FR-56B**: el usuario deberá distribuir exactamente el 100% del ingreso entre las ocho categorías de gasto y ahorro.
+- **FR-56C**: el presupuesto actual se aplicará también al consultar meses anteriores; el historial corresponde al ingreso, no a las distribuciones de presupuesto.
+- **FR-56D**: ahorro deberá mostrarse como objetivo planificado y el ingreso restante deberá mostrarse por separado, sin presentarlo como ahorro confirmado.
 
 ### Eventos personales
 

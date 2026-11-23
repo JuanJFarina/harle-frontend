@@ -3,12 +3,12 @@
 ## Estado actual
 
 - **Prototipo navegable**: la landing, el acceso, el registro y los paneles de cuenta, finanzas y eventos están implementados en Next.js.
-- **Datos de demostración parciales**: finanzas y las preferencias editables de cuenta siguen funcionando sólo en memoria local.
+- **Finanzas integradas**: el panel usa movimientos PostgreSQL reales y permite administrar ingresos históricos, presupuesto, gastos, reintegros y cuotas mediante la API autenticada.
 - **Registro gratuito integrado**: el frontend crea o recupera una cuenta gratuita mediante Google, restaura la sesión y guía la vinculación con Telegram usando el contrato `/api`.
 - **API bajo el origen del frontend**: Next.js reescribe `/api` hacia el backend para que las sesiones funcionen como cookies first-party aunque ambos proyectos estén desplegados en dominios diferentes.
 - **Suscripciones pagas integradas**: el frontend obtiene planes del backend, inicia checkout hospedado en Mercado Pago y muestra estados pendiente, activo, en mora y cancelado.
 - **Agenda integrada**: el panel consulta eventos personales reales, muestra ocurrencias recurrentes calculadas por el backend y permite crear, editar, activar, desactivar y eliminar eventos con recordatorios.
-- **Integración parcial**: email y contraseña, y la persistencia de los paneles de perfiles y finanzas se incorporan por etapas.
+- **Integración parcial**: email y contraseña, y la persistencia de las preferencias editables de cuenta se incorporan por etapas.
 
 ## Producto inicial
 
@@ -66,6 +66,10 @@
 ### Panel de finanzas personales
 
 - **Movimientos**: permite listar, filtrar y consultar gastos y reintegros propios.
+- **Ingreso mensual histórico**: permite guardar importes netos con fecha de vigencia y conserva los valores aplicables a meses anteriores.
+- **Presupuesto actual**: distribuye exactamente el 100% del ingreso entre las categorías de gasto y ahorro.
+- **Comparación mensual**: muestra gastos netos, porcentajes sobre ingreso, objetivos por categoría, ingreso disponible y objetivo de ahorro.
+- **Ahorro planificado**: ahorro es una asignación objetivo; el disponible luego de gastos se informa por separado y no se presenta como ahorro confirmado.
 - **Alta de movimientos**: permite registrar monto, fecha, descripción y categoría en pesos argentinos.
 - **Compras en cuotas**: permite registrar entre 2 y 12 cuotas y verlas como un mismo grupo.
 - **Correcciones**: permite modificar un movimiento; cuando pertenece a una compra en cuotas, el cambio afecta al grupo completo.
