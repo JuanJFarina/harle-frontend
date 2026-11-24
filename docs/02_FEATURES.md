@@ -69,6 +69,7 @@
 - **Ingreso mensual histórico**: permite guardar importes netos con fecha de vigencia y conserva los valores aplicables a meses anteriores.
 - **Presupuesto actual**: distribuye exactamente el 100% del ingreso entre las categorías de gasto y ahorro.
 - **Comparación mensual**: muestra gastos netos, porcentajes sobre ingreso, objetivos por categoría, ingreso disponible y objetivo de ahorro.
+- **Evolución de gastos**: muestra gastos netos semanales para períodos seleccionables de 1, 3 o 12 meses, preservando visualmente los saldos negativos producidos por reintegros.
 - **Ahorro planificado**: ahorro es una asignación objetivo; el disponible luego de gastos se informa por separado y no se presenta como ahorro confirmado.
 - **Alta de movimientos**: permite registrar monto, fecha, descripción y categoría en pesos argentinos.
 - **Compras en cuotas**: permite registrar entre 2 y 12 cuotas y verlas como un mismo grupo.

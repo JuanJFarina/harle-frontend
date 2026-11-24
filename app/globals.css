@@ -4268,24 +4268,51 @@ button.calendar-cell.with-event:focus-visible,
 }
 
 .finance-trend-bars {
-  min-height: 180px;
+  min-height: 190px;
   display: flex;
-  align-items: end;
-  justify-content: space-around;
+  align-items: stretch;
+  justify-content: flex-start;
   gap: 12px;
   padding-top: 20px;
+  overflow-x: auto;
 }
 
-.finance-trend-bars > div {
-  flex: 1;
+.finance-trend-point {
+  flex: 1 0 44px;
   display: grid;
   justify-items: center;
   gap: 8px;
 }
 
-.finance-trend-bars i {
-  width: min(42px, 70%);
+.finance-trend-bar-track {
+  width: 100%;
+  height: 140px;
+  position: relative;
+  border-top: 1px solid transparent;
+}
+
+.finance-trend-bar-track::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  border-top: 1px solid var(--line);
+}
+
+.finance-trend-bar-track i {
+  position: absolute;
+  left: 15%;
+  width: 70%;
   min-height: 4px;
-  border-radius: 8px 8px 2px 2px;
   background: var(--gold-400);
+}
+
+.finance-trend-bar-track i.positive {
+  bottom: 50%;
+  border-radius: 8px 8px 2px 2px;
+}
+
+.finance-trend-bar-track i.negative {
+  top: 50%;
+  border-radius: 2px 2px 8px 8px;
+  background: var(--teal-400);
 }

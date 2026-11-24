@@ -128,7 +128,7 @@ Los paneles que todavía no tienen endpoint deben continuar identificados como d
 - **FR-49**: las categorías iniciales deberán corresponder a alquileres, servicios esenciales, servicios no esenciales, hogar, transporte, salidas, compras y otros, aunque sus identificadores internos difieran.
 - **FR-50**: el alta desde la web deberá exigir una fecha explícita para evitar reglas implícitas de cambio de día.
 - **FR-51**: una compra en cuotas deberá admitir entre 2 y 12 cuotas y mostrar número, total y grupo.
-- **FR-52**: la actualización de un movimiento perteneciente a cuotas deberá advertir y aplicar el cambio al grupo completo.
+- **FR-52**: la actualización de un movimiento perteneciente a cuotas deberá advertir y aplicar el cambio al grupo completo; los cambios de monto conservarán las fechas y los cambios de fecha desplazarán todo el cronograma sin alterar la cantidad de cuotas.
 - **FR-53**: la eliminación de un movimiento o grupo deberá ser permanente y requerir confirmación.
 - **FR-54**: el backend deberá calcular montos y distribución de centavos; el frontend sólo deberá mostrar el resultado confirmado.
 - **FR-55**: los resúmenes deberán mostrar gastos, reintegros y neto sin confundir un reintegro con un monto negativo ingresado.
@@ -137,6 +137,7 @@ Los paneles que todavía no tienen endpoint deben continuar identificados como d
 - **FR-56B**: el usuario deberá distribuir exactamente el 100% del ingreso entre las ocho categorías de gasto y ahorro.
 - **FR-56C**: el presupuesto actual se aplicará también al consultar meses anteriores; el historial corresponde al ingreso, no a las distribuciones de presupuesto.
 - **FR-56D**: ahorro deberá mostrarse como objetivo planificado y el ingreso restante deberá mostrarse por separado, sin presentarlo como ahorro confirmado.
+- **FR-56E**: la evolución de gastos deberá permitir períodos de 30, 90 y 365 días, terminar hoy para el mes actual o al finalizar el mes histórico seleccionado, y representar los gastos netos negativos.
 
 ### Eventos personales
 

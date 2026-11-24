@@ -32,6 +32,7 @@ import {
   ExpenseEntryType,
   ExpenseTransaction,
   FinanceDashboard,
+  FinanceTrendDays,
   getFinanceDashboard,
   HarleApiError,
   saveBudget,
@@ -66,10 +67,9 @@ const money = new Intl.NumberFormat("es-AR", {
 
 export function FinancePanel() {
   const session = useDashboardSession();
-  const now = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(
-    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
-  );
+  const today = todayIso(session.timezone);
+  const [selectedMonth, setSelectedMonth] = useState(() => today.slice(0, 7));
+  const [trendDays, setTrendDays] = useState<FinanceTrendDays>(30);
   const [dashboard, setDashboard] = useState<FinanceDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -79,18 +79,29 @@ export function FinancePanel() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<ExpenseTransaction | null>(null);
   const selectedMonthRef = useRef(selectedMonth);
+  const trendDaysRef = useRef(trendDays);
   const requestIdRef = useRef(0);
 
   const load = useCallback(
-    async (monthToLoad: string, signal?: AbortSignal) => {
+    async (
+      monthToLoad: string,
+      trendDaysToLoad: FinanceTrendDays,
+      signal?: AbortSignal,
+    ) => {
       const requestId = ++requestIdRef.current;
       const [year, month] = monthToLoad.split("-").map(Number);
       try {
-        const result = await getFinanceDashboard(year, month, signal);
+        const result = await getFinanceDashboard(
+          year,
+          month,
+          trendDaysToLoad,
+          signal,
+        );
         if (
           !signal?.aborted &&
           requestId === requestIdRef.current &&
-          monthToLoad === selectedMonthRef.current
+          monthToLoad === selectedMonthRef.current &&
+          trendDaysToLoad === trendDaysRef.current
         ) {
           setDashboard(result);
           setError(null);
@@ -99,7 +110,8 @@ export function FinancePanel() {
         if (
           !signal?.aborted &&
           requestId === requestIdRef.current &&
-          monthToLoad === selectedMonthRef.current
+          monthToLoad === selectedMonthRef.current &&
+          trendDaysToLoad === trendDaysRef.current
         ) {
           setDashboard(null);
           setError(apiMessage(caught));
@@ -108,7 +120,8 @@ export function FinancePanel() {
         if (
           !signal?.aborted &&
           requestId === requestIdRef.current &&
-          monthToLoad === selectedMonthRef.current
+          monthToLoad === selectedMonthRef.current &&
+          trendDaysToLoad === trendDaysRef.current
         ) {
           setLoading(false);
         }
@@ -121,11 +134,12 @@ export function FinancePanel() {
     const controller = new AbortController();
     const requestId = ++requestIdRef.current;
     const [year, month] = selectedMonth.split("-").map(Number);
-    void getFinanceDashboard(year, month, controller.signal)
+    void getFinanceDashboard(year, month, trendDays, controller.signal)
       .then((result) => {
         if (
           requestId === requestIdRef.current &&
-          selectedMonth === selectedMonthRef.current
+          selectedMonth === selectedMonthRef.current &&
+          trendDays === trendDaysRef.current
         ) {
           setDashboard(result);
           setError(null);
@@ -135,7 +149,8 @@ export function FinancePanel() {
         if (
           !controller.signal.aborted &&
           requestId === requestIdRef.current &&
-          selectedMonth === selectedMonthRef.current
+          selectedMonth === selectedMonthRef.current &&
+          trendDays === trendDaysRef.current
         ) {
           setDashboard(null);
           setError(apiMessage(caught));
@@ -145,13 +160,14 @@ export function FinancePanel() {
         if (
           !controller.signal.aborted &&
           requestId === requestIdRef.current &&
-          selectedMonth === selectedMonthRef.current
+          selectedMonth === selectedMonthRef.current &&
+          trendDays === trendDaysRef.current
         ) {
           setLoading(false);
         }
       });
     return () => controller.abort();
-  }, [selectedMonth]);
+  }, [selectedMonth, trendDays]);
 
   const visibleTransactions = useMemo(
     () =>
@@ -167,7 +183,7 @@ export function FinancePanel() {
     setSaving(true);
     try {
       await action();
-      await load(selectedMonthRef.current);
+      await load(selectedMonthRef.current, trendDaysRef.current);
       return true;
     } catch (caught) {
       setError(apiMessage(caught));
@@ -372,8 +388,8 @@ export function FinancePanel() {
                     <input
                       name="effective_on"
                       type="date"
-                      max={todayIso()}
-                      defaultValue={todayIso()}
+                      max={today}
+                      defaultValue={today}
                       required
                     />
                   </label>
@@ -432,24 +448,45 @@ export function FinancePanel() {
                 <div className="panel-card-title-row">
                   <div>
                     <h2>Evolución de gastos</h2>
-                    <p>Últimas seis semanas</p>
+                    <p>Gastos netos por semana</p>
                   </div>
+                  <select
+                    aria-label="Período de evolución de gastos"
+                    value={trendDays}
+                    onChange={(event) => {
+                      const value = Number(event.target.value) as FinanceTrendDays;
+                      trendDaysRef.current = value;
+                      setDashboard(null);
+                      setError(null);
+                      setLoading(true);
+                      setTrendDays(value);
+                    }}
+                  >
+                    <option value={30}>1 mes</option>
+                    <option value={90}>3 meses</option>
+                    <option value={365}>12 meses</option>
+                  </select>
                 </div>
                 <div className="finance-trend-bars">
                   {dashboard.trend.map((point) => {
+                    const netSpent = Number(point.net_spent);
                     const maximum = Math.max(
                       1,
                       ...dashboard.trend.map((item) =>
-                        Math.max(0, Number(item.net_spent)),
+                        Math.abs(Number(item.net_spent)),
                       ),
                     );
                     return (
-                      <div key={point.week_starts_on}>
-                        <i
-                          style={{
-                            height: `${Math.max(4, (Math.max(0, Number(point.net_spent)) / maximum) * 140)}px`,
-                          }}
-                        />
+                      <div className="finance-trend-point" key={point.week_starts_on}>
+                        <span className="finance-trend-bar-track">
+                          <i
+                            className={netSpent < 0 ? "negative" : "positive"}
+                            style={{
+                              height: `${Math.max(4, (Math.abs(netSpent) / maximum) * 70)}px`,
+                            }}
+                            title={money.format(netSpent)}
+                          />
+                        </span>
                         <small>{formatShortDate(point.week_starts_on)}</small>
                       </div>
                     );
@@ -572,6 +609,7 @@ export function FinancePanel() {
         <ExpenseEditor
           editing={editing}
           saving={saving}
+          timezone={session.timezone}
           onClose={() => {
             setEditorOpen(false);
             setEditing(null);
@@ -609,11 +647,13 @@ function Stat({
 function ExpenseEditor({
   editing,
   saving,
+  timezone,
   onClose,
   onSubmit,
 }: {
   editing: ExpenseTransaction | null;
   saving: boolean;
+  timezone: string;
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
@@ -636,8 +676,8 @@ function ExpenseEditor({
         </div>
         {editing?.installment_group_id && (
           <p role="alert">
-            Los cambios se aplicarán a toda la compra en cuotas, conservando la
-            cantidad de cuotas.
+            Los cambios se aplicarán a toda la compra. Cambiar esta fecha
+            desplazará el cronograma completo; la cantidad de cuotas se conserva.
           </p>
         )}
         <form className="modal-form" onSubmit={(event) => void onSubmit(event)}>
@@ -698,11 +738,16 @@ function ExpenseEditor({
               </select>
             </label>
             <label>
-              Fecha
+              {editing?.installment_group_id ? "Fecha de esta cuota" : "Fecha"}
               <input
                 type="date"
                 name="transaction_date"
-                defaultValue={editing?.transaction_date ?? todayIso()}
+                defaultValue={editing?.transaction_date ?? todayIso(timezone)}
+                max={
+                  editing?.installment_group_id
+                    ? undefined
+                    : todayIso(timezone)
+                }
                 required
               />
             </label>
@@ -754,10 +799,16 @@ function apiMessage(error: unknown): string {
     : "No pudimos completar la operación.";
 }
 
-function todayIso(): string {
-  const now = new Date();
-  const offset = now.getTimezoneOffset();
-  return new Date(now.getTime() - offset * 60_000).toISOString().slice(0, 10);
+function todayIso(timezone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: timezone,
+  }).formatToParts(new Date());
+  const value = (type: "year" | "month" | "day") =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
 }
 
 function formatDate(value: string): string {

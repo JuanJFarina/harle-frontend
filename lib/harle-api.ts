@@ -123,6 +123,7 @@ export type ExpenseCategory =
 
 export type BudgetCategory = ExpenseCategory | "savings";
 export type ExpenseEntryType = "expense" | "refund";
+export type FinanceTrendDays = 30 | 90 | 365;
 
 export type ExpenseTransaction = {
   transaction_id: string;
@@ -275,11 +276,13 @@ export async function logout(csrfToken: string): Promise<void> {
 export async function getFinanceDashboard(
   year: number,
   month: number,
+  trendDays: FinanceTrendDays,
   signal?: AbortSignal,
 ): Promise<FinanceDashboard> {
   const query = new URLSearchParams({
     year: String(year),
     month: String(month),
+    trend_days: String(trendDays),
   });
   return request<FinanceDashboard>(`/api/finances/dashboard?${query}`, { signal });
 }
