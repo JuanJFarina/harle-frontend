@@ -111,6 +111,73 @@ export type EventMutation = {
   notification_quota: NotificationQuota;
 };
 
+export type ExpenseCategory =
+  | "rent"
+  | "essential_services"
+  | "non_essential_services"
+  | "home"
+  | "transport"
+  | "outings"
+  | "shopping"
+  | "other";
+
+export type BudgetCategory = ExpenseCategory | "savings";
+export type ExpenseEntryType = "expense" | "refund";
+export type FinanceTrendDays = 30 | 90 | 365;
+
+export type ExpenseTransaction = {
+  transaction_id: string;
+  entry_type: ExpenseEntryType;
+  amount: string;
+  currency: string;
+  category: ExpenseCategory;
+  transaction_date: string;
+  description: string;
+  installment_group_id: string | null;
+  installment_number: number | null;
+  installment_count: number | null;
+};
+
+export type Income = {
+  income_id: string;
+  amount: string;
+  currency: string;
+  effective_on: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type FinanceBudget = {
+  allocations: { category: BudgetCategory; percentage: string }[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type FinanceDashboard = {
+  year: number;
+  month: number;
+  income: Income | null;
+  income_history: Income[];
+  budget: FinanceBudget | null;
+  gross_expenses: string;
+  gross_refunds: string;
+  net_expenses: string;
+  remaining_income: string | null;
+  savings_target: string | null;
+  categories: {
+    category: BudgetCategory;
+    actual_amount: string;
+    income_percentage: string | null;
+    budget_percentage: string | null;
+    budget_amount: string | null;
+    budget_used_percentage: string | null;
+  }[];
+  trend: { week_starts_on: string; net_spent: string }[];
+  transactions: ExpenseTransaction[];
+};
+
+export type BudgetPercentages = Record<BudgetCategory, string>;
+
 type ErrorEnvelope = {
   error?: {
     code?: string;
@@ -206,6 +273,113 @@ export async function logout(csrfToken: string): Promise<void> {
   });
 }
 
+export async function getFinanceDashboard(
+  year: number,
+  month: number,
+  trendDays: FinanceTrendDays,
+  signal?: AbortSignal,
+): Promise<FinanceDashboard> {
+  const query = new URLSearchParams({
+    year: String(year),
+    month: String(month),
+    trend_days: String(trendDays),
+  });
+  return request<FinanceDashboard>(`/api/finances/dashboard?${query}`, { signal });
+}
+
+export async function saveIncome(
+  amount: string,
+  effectiveOn: string,
+  csrfToken: string,
+): Promise<Income> {
+  const response = await request<{ operation: string; income: Income }>(
+    "/api/finances/income",
+    {
+      method: "POST",
+      headers: jsonMutationHeaders(csrfToken),
+      body: JSON.stringify({ amount, effective_on: effectiveOn }),
+    },
+  );
+  return response.income;
+}
+
+export async function saveBudget(
+  percentages: BudgetPercentages,
+  csrfToken: string,
+): Promise<FinanceBudget> {
+  const response = await request<{
+    operation: string;
+    budget: FinanceBudget;
+  }>("/api/finances/budget", {
+    method: "POST",
+    headers: jsonMutationHeaders(csrfToken),
+    body: JSON.stringify(percentages),
+  });
+  return response.budget;
+}
+
+export async function createExpense(
+  expense: {
+    amount: string;
+    entry_type: ExpenseEntryType;
+    category: ExpenseCategory;
+    transaction_date: string;
+    description: string;
+  },
+  csrfToken: string,
+): Promise<ExpenseTransaction[]> {
+  return financeExpenseMutation("/api/finances/expenses", expense, csrfToken);
+}
+
+export async function createInstallmentExpense(
+  expense: {
+    total_amount: string;
+    category: ExpenseCategory;
+    transaction_date: string;
+    description: string;
+    installment_count: number;
+  },
+  csrfToken: string,
+): Promise<ExpenseTransaction[]> {
+  return financeExpenseMutation(
+    "/api/finances/expenses/installments",
+    expense,
+    csrfToken,
+  );
+}
+
+export async function updateExpense(
+  transactionId: string,
+  expense: {
+    amount: string;
+    entry_type: ExpenseEntryType;
+    category: ExpenseCategory;
+    transaction_date: string;
+    description: string;
+  },
+  csrfToken: string,
+): Promise<ExpenseTransaction[]> {
+  return financeExpenseMutation(
+    `/api/finances/expenses/${transactionId}`,
+    expense,
+    csrfToken,
+  );
+}
+
+export async function deleteExpense(
+  transactionId: string,
+  csrfToken: string,
+): Promise<ExpenseTransaction[]> {
+  const response = await request<{
+    operation: string;
+    transactions: ExpenseTransaction[];
+  }>(`/api/finances/expenses/${transactionId}/delete`, {
+    method: "POST",
+    headers: { "X-CSRF-Token": csrfToken },
+  });
+  return response.transactions;
+}
+
 export async function getEvents(
   startDate: string,
   endDate: string,
@@ -265,6 +439,29 @@ function eventMutation(
     },
     body: body ? JSON.stringify(body) : undefined,
   });
+}
+
+async function financeExpenseMutation(
+  path: string,
+  body: object,
+  csrfToken: string,
+): Promise<ExpenseTransaction[]> {
+  const response = await request<{
+    operation: string;
+    transactions: ExpenseTransaction[];
+  }>(path, {
+    method: "POST",
+    headers: jsonMutationHeaders(csrfToken),
+    body: JSON.stringify(body),
+  });
+  return response.transactions;
+}
+
+function jsonMutationHeaders(csrfToken: string): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": csrfToken,
+  };
 }
 
 async function request<Response>(
